@@ -1,0 +1,14 @@
+/*
+    Jason Project
+
+    -- created on Maio 09, 2011
+*/
+
+MAS cowboy_agents {
+   infrastructure: Centralised
+
+   agents:
+       sample;
+
+   aslSourcePath: "src/asl"; 
+}
