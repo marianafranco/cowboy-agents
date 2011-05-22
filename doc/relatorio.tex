@@ -2,24 +2,66 @@
 \usepackage{graphicx}
 \usepackage[portuguese]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage{fullpage}
+\usepackage{indentfirst}
+\usepackage{colortbl} % Permite o uso de cores em tabelas
+\usepackage{url}
  
+\renewcommand{\labelitemi}{$\bullet$}
+
+\renewenvironment{quote}{%
+  \list{}{%
+    \leftmargin3.0cm   % this is the adjusting screw
+    \rightmargin\leftmargin
+  }
+  \item\relax
+}
+{\endlist}
+
 \begin{document}
+
+\begin{figure}[!t]
+\centering 
+\includegraphics[width=15.5cm]{images/logo.pdf}
+\end{figure}
+
 \title{Aplicação de programação orientada à organização de agentes no Multi-Agent Programming Contest}
 \author{Mariana Ramos Franco e Rafael Barbolo Lopes}
-\institute{Escola Politécnica da Universidade de São Paulo \\ Departamento de Engenharia de Computação e Sistemas Digitais \\ PCS 5703 - Sistemas Multi-Agentes}
+% \institute{Escola Politécnica da Universidade de São Paulo \\ Departamento de Engenharia de Computação e Sistemas Digitais \\ PCS 5703 - Sistemas Multi-Agentes}
+\institute{PCS 5703 - Sistemas Multi-Agentes}
+\date{21 de Maio de 2011}
+
 \maketitle
 
 \begin{abstract}
-blablablabla...
+Este trabalho apresenta o projeto e implementação de um SMA para participação no \textit{Agent Contest} através da aplicação de programação orientada à organização de agentes. Para isso utilizou-se o modelo organizacional MOISE+ e a plataforma JASON.
 \end{abstract}
 
-
+% ### INTRODUÇÃO ###
 \section{Introdução}
 
 % Breve descrição do problema, bem como de software (modelos, plataformas, etc) e hardware utilizados.
 
+O objetivo do trabalho é projetar e implementar um Sistema Multi-Agente (SMA) para participar do \textit{Agent Contest} de 2009.
 
-\section{Análise e especificação do SMA}
+O \textit{Multi-Agent Programming Contest} é uma competição em que simultaneamente, dois times são situados no mesmo ambiente e competem diretamente num cenário definido pelos organizadores. Por se tratar de uma competição direta, é um cenário interessante para avaliar e comparar diferentes sistemas, assim possibilitando identificar pontos fortes e fracos de cada sistema, promovendo e avaliando o desenvolvimento de todos os participantes.
+
+Conforme citado em \cite{AC}, o \textit{Multi-Agent Programming Contest} tem as seguintes características:
+
+\begin{quote}
+\textit{"This competition is an attempt to stimulate research in the area of multiagent systems development and programming by:}
+\begin{enumerate}
+\item \textit{Identifying key problems,}
+\item \textit{Collecting suitable benchmarks, and}
+\item \textit{Gathering test cases which require and enforce coordinated action that can serve as milestones for testing multi-agent programming languages, platforms and tools."}
+\end{enumerate}
+\end{quote}
+
+Em 2009, o \textit{Agent Contest} definiu como tema para a competição um cenário de pastoreio, em que os agentes (comboys) estão localizados em um grid com árvores, vacas, cercas, currais e botões (que permitem a abertura da cerca). Árvores e currais são elementos estáticos, enquanto as cercas são controladas pelos agentes por meio de botões. Já as vacas possuem um algoritmo de movimentação com base nos elementos em torno delas, de modo a sofrerem atração mútua (tendendo a se agrupar) e a serem repelitas pelos obstáculos e agentes. A intensidade de cada um desses parâmetros comportamentais pode variar para cada cenário e é definida pelos organizadores do \textit{Agent Contest}, não estando disponível diretamente para os competidores.
+
+
+% ### ANÁLISE E ESPECIFICAÇÃO DO SMA ###
+\section{Análise e Especificação do SMA}
 
 % Descrição do método adotado para o desenvolvimento do SMA; especificação dos requisitos do SMA e especificação dos componentes do SMA (agentes, organização, interações, etc) segundo o método de desenvolvimento adotado.
 
@@ -35,8 +77,224 @@ blablablabla...
 
 Para o desenvolvimento do SMA foi utilizado um método situacional construido sob medida para o projeto, a partir de fragmentos de métodos capturados de três abordagens de desenvolvimento: USDP \cite{USDP}, Gaia \cite{GAIA} e MOISE+ \cite{MOISE}.
 
+O método é composto de quatro fases situacionais: Especificação de Requisitos, Análise, Design e Implementação.
 
-\section{Arquitetura e design do SMA}
+Na fase de Especificação de Requisitos foram definidos os atores e os casos de uso do sistema. Já a fase de Análise foi composta de três subfases: Descrição do Ambiente em Gaia, Descrição da Organização em MOISE+, e Descrição das Interações usando Gaia.
+
+
+% ### ESPECIFICAÇÃO DE REQUISITOS ###
+\subsection{Especificação de Requisitos}
+
+
+% ### IDENTIFICAÇÃO DOS ATORES ###
+\subsubsection{Identificação dos Atores}
+
+\begin{center}
+\begin{tabular}{|l|p{3cm}|p{8cm}|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Ator}	&\textbf{Papel}	&\textbf{Uso do sistema} \\
+\hline
+cowboy	&Capturar vacas		&Move-se pelo pasto, interage com vacas, abre/fecha cerca, interage com cowboy líder \\ 
+\hline
+cowboy sabotador	&Atrapalhar equipe adversária	&Move-se pelo pasto, interage com vacas, abre/fecha cerca da outra equipe, interage com cowboy líder \\
+\hline
+cowboy líder	&Coordenar cowboys	&Move-se pelo pasto, interage com vacas, abre/fecha cerca, coordena cowboys \\
+\hline
+vaca	&Pastar	&Move-se pelo pasto, se aproxima de rebanhos, se afasta de cowboys e de obstáculos \\
+\hline
+\end{tabular}
+\end{center}
+
+\textit{Observação: o ator vaca é implementado pelo simulador e por isso casos de uso iniciados por ele não serão apresentados neste documento.}
+
+
+% ### IDENTIFICAÇÃO DOS CASOS DE USO ###
+\subsubsection{Identificação dos Casos de Uso}
+
+\begin{center}
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Caso de uso}		&\textbf{Breve descrição} \\
+\hline
+Procurar vaca	&Cowboys movem-se pelo pasto até encontrar uma vaca \\
+\hline
+Capturar vaca	&Ao encontrar uma vaca, cowboys organizam-se para capturá-la \\
+\hline
+Atrapalhar equipe adversária &O cowboy sabotador atrapalha a equipe adversária \\
+\hline
+Abrir/fechar cerca	&Cowboy se aproxima (ou se afasta) do botão para abrir (ou fechar) a cerca  \\
+\hline
+\end{tabular}
+\end{center}
+
+
+% ### DESCRIÇÃO DOS CASOS DE USO ###
+\subsubsection{Descrição dos Casos de Uso}
+
+% Caso de Uso: Procurar vaca
+\begin{center}
+\begin{tabular}{|p{2.5cm}|p{10cm}|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Caso de Uso:}	&\textbf{Procurar vaca} \\
+\hline
+\textbf{Ator:} 			&cowboy, cowboy líder, vaca. \\
+\hline
+\textbf{Início:}		&Cowboy líder deseja encontrar uma vaca. \\
+\hline
+\end{tabular}
+\begin{tabular}{|p{0.5cm}|p{12cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{Fluxo Típico}} \\
+\hline
+\textbf{No}	&\textbf{Ação} \\
+\hline
+1	&Cowboys e comboy líder movimentam-se para uma nova posição. \\
+\hline
+2	&Cowboy encontra uma vaca na vizinhança. \\
+\hline
+3	&Cowboy grava o identificador e a coordenada da vaca encontrada. \\
+\hline
+\multicolumn{2}{|c|}{\textbf{Fluxos Alternativos}} \\
+\hline
+\multicolumn{2}{|l|}{\textbf{Alternativa 1:} Nenhum cowboy encontrou vaca no movimento.} \\
+\hline
+\textbf{No}	&\textbf{Ação} \\
+\hline
+2	&Cowboy não encontra uma vaca na vizinhança. \\
+\hline
+3	&Repete passo 1. \\
+\hline
+\end{tabular}
+\end{center}
+
+% Caso de Uso: Capturar vaca
+\begin{center}
+\begin{tabular}{|p{2.5cm}|p{10cm}|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Caso de Uso:}	&\textbf{Capturar vaca} \\
+\hline
+\textbf{Ator:} 			&cowboy, cowboy líder, vaca. \\
+\hline
+\textbf{Início:}		&Cowboy encontrou uma vaca. \\
+\hline
+\end{tabular}
+\begin{tabular}{|p{0.5cm}|p{12cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{Fluxo Típico}} \\
+\hline
+\textbf{No}	&\textbf{Ação} \\
+\hline
+1	&Cowboy emite o identificador e a coordenada da vaca para o cowboy líder. \\
+\hline
+2	&Cowboy líder emite ordem de captura com identificador e coordenada da vaca para todos os cowboys. \\
+\hline
+3	&Cowboys fazem formação um ao lado do outro para empurrar a vaca para a cerca (cowboy líder comanda o movimento). \\
+\hline
+4	&Cowboys encurralam vaca na cerca. \\
+\hline
+5	&Cowboy líder manda o cowboy mais próximo do botão abrir a cerca. \\
+\hline
+6	&Vaca entra na cerca. \\
+\hline
+7	&Cowboy fecha a cerca. \\
+\hline
+8	&Cowboys desfazem formação. \\
+\hline
+\end{tabular}
+\end{center}
+
+% Caso de Uso: Atrapalhar equipe adversária
+\begin{center}
+\begin{tabular}{|p{2.5cm}|p{10cm}|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Caso de Uso:}	&\textbf{Atrapalhar equipe adversária} \\
+\hline
+\textbf{Ator:} 			&cowboy sabotador. \\
+\hline
+\textbf{Início:}		&Cowboy sabotador caminha até a cerca do adversário. \\
+\hline
+\end{tabular}
+\begin{tabular}{|p{0.5cm}|p{12cm}|}
+\hline
+\multicolumn{2}{|c|}{\textbf{Fluxo Típico}} \\
+\hline
+\textbf{No}	&\textbf{Ação} \\
+\hline
+1	&Cowboy sabotador chega na cerca do adversário. \\
+\hline
+2	&Cowboy sabotador envia estímulos para o botão da cerca para mantê-la sempre aberta. \\
+\hline
+\end{tabular}
+\end{center}
+
+
+% ### DIAGRAMA DO MODELO DE CASOS DE USO ###
+\subsubsection{Diagrama do Modelo de Casos de Uso}
+
+\paragraph{ }
+
+\begin{figure}[!ht]
+\centering 
+\includegraphics[width=15cm]{images/usecase.png}
+\caption{Diagrama do Modelo de Casos de Uso}
+\end{figure}
+
+% ### ANÁLISE DO SMA ###
+\subsection{Análise do SMA}
+
+
+% ### DESCRIÇÃO DO AMBIENTE ###
+\subsubsection{Descrição do Ambiente (Gaia)}
+
+\paragraph{ }
+O ambiente em que o SMA atuará é composto de uma grade de células. O tamanho da grade é especificado no início da simulação e é variável. Porém, ele não pode ter mais de 150 x 150 células. A coordenada [0, 0] da grade está no canto superior esquerdo (noroeste). O ambiente simulado possui dois currais retangulares – um para cada equipe – que servem como um local para onde as vacas devem ser dirigidas. Além disso, há cercas que podem ser abertas através de botões.
+
+Cada célula da grade pode ser ocupada por exatamente um dos seguintes objetos:
+
+\begin{itemize}
+\item Agente (controlado e capaz de se mover de uma célula para outra adjacente);
+\item Obstáculo (bloqueia a célula);
+\item Vaca (controlada pelo simulador, pode se mover de uma célula para outra adjacente, tende a formar rebanhos em áreas abertas e mantém distância de obstáculos e de agentes);
+\item Cerca (pode ser aberta usando um botão, para isto o agente deve ficar parado na célula adjacente ao respectivo botão).
+\end{itemize}
+
+Vacas devem ser empurradas para os currais. Cada time aprende a posição e as dimensões do seu curral no início de cada simulação.
+
+\begin{figure}[!ht]
+\centering 
+\includegraphics[width=10cm]{images/env.png}
+\caption{Ambiente de simulação. Agentes (triângulos vermelhos e azuis) são dirigidos pelos competidores. Obstáculos (círculos verde) bloqueiam células. Vacas (círculos brancos) movimentam-se de acordo com um algoritmo de vaca. Cercas (formas em x) podem ser abertas por um agente parado na célula adjacente ao botão (em forma de barra). As vacas têm que ser empurradas para dentro dos currais (retângulos vermelhos e azuis.)}
+\end{figure}
+
+
+% ### DESCRIÇÃO DA ORGANIZAÇÃO ###
+\subsubsection{Descrição da Organização (MOISE+)}
+
+\paragraph{ }
+O propósito da organização de agentes é capturar o maior número possível de vacas e atrapalhar o time adversário.
+
+Existem 3 grupos de agentes:
+
+\begin{itemize}
+\item Liderança: grupo composto pelo cowboy líder que coordena os outros cowboys;
+\item Sabotagem: grupo composto pelo cowboy sabotador que procura atrapalhar a equipe adversária;
+\item Captura: grupo composto pelos cowboys responsáveis por capturar as vacas.
+\end{itemize}
+
+Existem 3 metas a serem cumpridas pelos agentes: procurar vaca, capturar vaca e atrapalhar equipe adversária. Para cada uma dessas metas, há missões específicas que os agentes devem cumprir. A especificação funcional no item 3.1 apresenta essas metas e missões.
+
+
+% ### DESCRIÇÃO DAS INTERAÇÕES ###
+\subsubsection{Descrição das Interações (Gaia)}
+
+\paragraph{ }
+O modelo de interações representa as dependências e relacionamentos entre os papéis do sistema multiagentes, de acordo com as definições de um protocolo de comunicação entre os agentes.
+
+As comunicações entre os agentes modelados ocorrem apenas entre os agentes com papel de capturador e o agente com papel de coordenador. Mais detalhes são dados no item 3.2.
+
+
+% ### ARQUITETURA E DESIGN DO SMA ###
+\section{Arquitetura e Design do SMA}
 
 % Design dos componentes do SMA e descrição da arquitetura do SMA, segundo o método de desenvolvimento adotado.
 
@@ -49,10 +307,168 @@ Para o desenvolvimento do SMA foi utilizado um método situacional construido so
 % \end{enumerate}
 % Please give reasons why you have chosen the methods explained above.
 
+A fase de design (projeto) do SMA especificada no método situacional é composta de quatro subfases: Modelo de Organização (MOISE+), Modelo de Interações (Gaia), Projeto de Agentes (Gaia) e Projeto de Comportamento Organizacional (MOISE+).
+
+
+% ### MODELO DE ORGANIZAÇÃO (MOISE+) ###
+\subsection{Modelo de Organização (MOISE+)}
+
+MOISE+ define 3 tipos de especificação para o modelo e projeto de organizações em um SMA: 
+
+\begin{itemize}
+\item Especificação Estrutural: define os papéis, relações entre papéis e grupos.
+\item Especificação Funcional: define as missões e planos.
+\item Especificação Deôntica: especifica, no nível individual, como permissões e obrigações de um papél estão relacionas com uma missão.
+\end{itemize}
+
+
+\newpage
+% ### ESPECIFICAÇÃO ESTRUTURAL ###
+\subsubsection{Especificação Estrutural}
+
+\paragraph{ }
+
+\begin{figure}[!ht]
+\centering 
+\includegraphics[width=8cm]{images/structuraspec.png}
+\caption{Especificação Estrutural}
+\end{figure}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Papel de origem}		&\textbf{Papel de destino} 	& \textbf{Tipo de link}\\
+\hline
+Coordenador	&Capturador	&Autoridade \\
+\hline
+Capturador	&Coordenador	&Comunicação \\
+\hline
+\end{tabular}
+\\ Links entre papéis
+\end{center}
+
+\newpage
+
+% ### ESPECIFICAÇÃO FUNCIONAL ###
+\subsubsection{Especificação Funcional}
+
+\paragraph{ }
+
+\begin{figure}[!ht]
+\centering 
+\includegraphics[width=11cm]{images/functionalspec.png}
+\caption{Especificação Estrutural}
+\end{figure}
+
+
+% ### ESPECIFICAÇÃO DEÔNTICA ###
+\subsubsection{Especificação Deôntica}
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\rowcolor[gray]{0.8} \textbf{Papel}		&\textbf{Relação deôntica} 	&\textbf{Missão}	&\textbf{Restrição temporal}\\
+\hline
+Sabotador	&Obrigação	&m4	&A qualquer momento \\
+\hline
+Capturador	&Obrigação	&m1	&Enquanto procura vaca \\
+\hline
+Capturador	&Obrigação	&m2	&Enquanto captura vaca \\
+\hline
+Coordenador	&Obrigação	&m1	&Enquanto captura vaca \\
+\hline
+\end{tabular}
+\end{center}
+
+\newpage
+
+% ### MODELO DE INTERAÇÕES (GAIA) ###
+\subsection{Modelo de Interações (Gaia)}
+
+As comunicações entre os agentes modelados ocorrem apenas entre os agentes com papel de capturador e o agente com papel de coordenador.
+
+A seguir definimos os possíveis protocolos de comunicação entre os agentes:
+
+
+% Protocolo: Encontrou vaca
+\begin{center}
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{5cm}}
+\cline{1-2}
+\multicolumn{2}{|l|}{Protocolo:} \\
+\multicolumn{2}{|l|}{Encontrou vaca}  \\
+\hline
+Iniciador: 			&Parceiro:		&Entrada: \\
+comboy 			&cowboy líder		&identificador e coordenada da vaca encontrada. \\
+\hline
+\multicolumn{2}{|p{5cm}|}{Descrição:}  &Saída \\
+\multicolumn{2}{|p{5cm}|}{Comboy informa o líder que encontrou uma vaca.}  &OK, dados recebidos. \\
+\hline
+\end{tabular}
+\end{center}
+
+% Protocolo: Cercar vaca
+\begin{center}
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{5cm}}
+\cline{1-2}
+\multicolumn{2}{|l|}{Protocolo:} \\
+\multicolumn{2}{|l|}{Cercar vaca}  \\
+\hline
+Iniciador: 			&Parceiro:		&Entrada: \\
+cowboy líder 			&cowboy		&identificador e coordenada da vaca a ser capturada; coordenada para onde o cowboy deve se locomover para começar a cercar a vaca. \\
+\hline
+\multicolumn{2}{|p{5cm}|}{Descrição:}  &Saída \\
+\multicolumn{2}{|p{5cm}|}{Líder ordena o cowboy capturar vaca.}  &OK, dados recebidos. \\
+\hline
+\end{tabular}
+\end{center}
+
+% Protocolo: Abrir/Fechar cerca
+\begin{center}
+\begin{tabular}{|p{2.5cm}|p{2.5cm}|p{5cm}}
+\cline{1-2}
+\multicolumn{2}{|l|}{Protocolo:} \\
+\multicolumn{2}{|l|}{Abrir/Fechar cerca}  \\
+\hline
+Iniciador: 			&Parceiro:		&Entrada: \\
+cowboy líder 			&cowboy		&vaca no curral.\\
+\hline
+\multicolumn{2}{|p{5cm}|}{Descrição:}  &Saída \\
+\multicolumn{2}{|p{5cm}|}{Líder ordena o cowboy a abrir/fechar a cerca.}  &OK, cerca aberta/fechada. \\
+\hline
+\end{tabular}
+\end{center}
+
+
+% ### PROJETO DE AGENTES (GAIA) ###
+\subsection{Projeto de Agentes (Gaia)}
+
+O time de agentes para a competição será sempre formado de:
+
+\begin{itemize}
+\item 1 comboy líder
+\item 1 comboy sabotador
+\item 1 à N comboys
+\end{itemize}
+
+onde N é o número máximo de agentes no time - 2.
+
+% ### PROJETO DO COMPORTAMENTO ORGANIZACIONAL DOS AGENTES ###
+\subsection{Projeto de Comportamento Organizacional (MOISE+)}
+
+No sistema multiagente proposto, não é possível que agentes entrem ou saiam do ambiente. Cada time é composto de um número fixo (definido pelo simulador) de cowboys que permanecem no ambiente durante toda a simulação.
+
+Os agentes recebem os papéis no início da simulação. Um agente receberá o papel de coordenador, e liderará a procura e captura de vacas. Outro agente receberá o papel de sabotador, e terá como missão atrapalhar o time adversário a atingir seus objetivos. Os outros agentes serão capturadores, e agirão em conjunto na procura e captura de vacas.
+
+Todos os agentes do sistema estão compromissados com pelo menos uma meta global do sistema(capturar vacas e atrapalhar o adversário). As metas locais desses agentes foram projetadas para alcançar as metas globais. Logo, o comportamento dos agentes sempre será dirigido por missões locais que visam as metas globais.
+
+
+% ### LINGUAGENS DE PROGRAMAÇÃO E PLATAFORMA DE EXECUÇÃO ###
 \section{Linguagens de programação e plataforma de execução}
 
 % Tecnologia SMA utilizada, características da implementação, etc.
 
+
+% ### ESTRATÉGIA PARA TIME DE AGENTES ###
 \section{Estratégia para time de agentes}
 
 % Descrição do algoritmo de deslocamento dos agentes, das estratégias de coordenação e de otimização de tarefas, etc.
@@ -81,11 +497,23 @@ Para o desenvolvimento do SMA foi utilizado um método situacional construido so
 %        e.g. failure/crash recovery and alike.
 % \end{enumerate}
 
+A nossa estratégia consiste em garantir duas coisas:
 
+\begin{itemize}
+\item Nossa equipe vai capturar pelo menos 1 vaca durante a partida;
+\item A equipe adversária não vai capturar nenhuma vaca.
+\end{itemize}
+
+Para que isto se concretize, devemos ter um cowboy (sabotador) que vai até a cerca adversária e a mantem constantemente aberta. Os outros cowboys se empenham em capturar vacas e garantem que pelo menos 1 vaca esteja dentro da cerca no final do jogo.
+
+
+% ### CARACTERÍSTICAS TÉCNICAS ###
 \section{Características técnicas}
 
 % Descrição de características técnicas do SMA desenvolvido, tais como estabilidade e recuperação de falhas.
 
+
+% ### DISCUSSÃO E CONCLUSÃO ###
 \section{Discussão e conclusão}
 
 % Comentários sobre a facilidade/dificuldade de utilização do método de desenvolvimento adotado, comentários sobre a facilidade e ou dificuldade do modelo organizacional para este domínio, bem como possíveis extensões que poderiam ser realizadas na solução proposta.
