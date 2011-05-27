@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="http://moise.sourceforge.net/xml/os.xsl" type="text/xsl" ?>
+
+<organisational-specification 
+
+    id="cowboy-agents"
+    os-version="0.1"
+  
+    xmlns='http://moise.sourceforge.net/os'
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='http://moise.sourceforge.net/os
+                        http://moise.sourceforge.net/xml/os.xsd' >
+
+	<!-- STRUCTURAL SPECIFICATION -->
+	<structural-specification>
+		<role-definitions>
+			<role id="cowboy" />
+        	<role id="captor"> <extends role="cowboy"/> </role>
+        	<role id="cheat"> <extends role="cowboy"/> </role>
+        	<role id="leader"> <extends role="captor"/> </role>
+		</role-definitions>
+
+        <group-specification id="team">
+        	<links>
+                <link from="leader" to="captor" type="authority" 
+                      scope="inter-group" extends-sub-groups="true" bi-dir="false"/>
+                <link from="captor" to="leader" type="communication" 
+                      scope="inter-group" extends-sub-groups="true" bi-dir="false"/>
+            </links>
+            
+        	<sub-groups>
+	        	<group-specification id="leadership">
+	        		<roles>
+                        <role id="leader"   min="1" max="1" />
+                    </roles>
+	        	</group-specification>
+	        	
+	        	<group-specification id="capture">
+	        		<roles>
+                        <role id="captor"   min="0" max="20" />
+                    </roles>
+	        	</group-specification>
+	        	
+	        	<group-specification id="sabotage">
+	        		<roles>
+                        <role id="cheat"   min="0" max="1" />
+                    </roles>
+	        	</group-specification>
+        	</sub-groups>
+        	
+        	<formation-constraints>
+             	<!-- sub-groups scope cardinality -->
+                <cardinality min="1" max="1" object="role" id="leader"/>
+            </formation-constraints>
+        </group-specification>
+	</structural-specification>
+
+	<!-- FUNCIONAL SPECIFICATION -->
+	<functional-specification>
+	</functional-specification>
+
+	<!-- NORMATIVE SPECIFICATION -->
+	<normative-specification>
+	</normative-specification>
+</organisational-specification>

@@ -7,8 +7,14 @@
 MAS cowboy_agents {
    infrastructure: Centralised
 
-   agents:
-       sample;
+   environment: CowboysEnv
 
-   aslSourcePath: "src/asl"; 
+   agents:
+		orgManager [osfile="cowboy-agents-os.xml",gui=yes] 
+                  agentArchClass jmoise.OrgManager;
+
+   		leader      agentArchClass jmoise.OrgAgent;
+
+   classpath: "lib/moise.jar";"lib/jmoise.jar";
+   aslSourcePath: "src/asl";
 }
