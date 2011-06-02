@@ -1,5 +1,7 @@
-// Common plans for organised agents based on MOISE+ model.
-//
+// ******************************************************** //
+// Common plans for organised agents based on MOISE+ model. //
+// ******************************************************** //
+
 // These plans use the beliefs:
 // . desired_role(<GrSpec>,<Role>) and
 // . desired_mission(<SchSpec>,<Mission>).
@@ -52,3 +54,21 @@
 
 +error(M)[source(orgManager)]
 	<- .print("Error in organisational action: ",M); -error(M)[source(orgManager)].
+	
+
+// ********************************************** //
+// Common plans for all the agents on the system. //
+// ********************************************** //
+
+// connects to the server
++!connect_to_server
+	<- connectToServer;
+	!authenticate_to_server.
+-!connect_to_server[error_msg(M),code(C),code_line(L)]
+   <- .print("Error when connecting to server, command: ",C,", line ",L,", message: ",M).
+
+// authenticates the agent to the server
++!authenticate_to_server
+	<- authentication.
+-!authenticate_to_server[error_msg(M),code(C),code_line(L)]
+   <- .print("Error authenticating to the server, command: ",C,", line ",L,", message: ",M).

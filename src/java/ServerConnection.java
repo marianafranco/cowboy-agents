@@ -1,10 +1,9 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 /**
  * Class with static methods to connect to the server and communicate with it.
@@ -20,11 +19,8 @@ public class ServerConnection {
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
-	public static void connect() throws UnknownHostException, IOException {
-		Properties props = new Properties();
-		props.load(new FileInputStream("config.properties"));
-		final String host = props.getProperty("server.host");
-		final int port = Integer.parseInt(props.getProperty("server.port"));
+	public void connect(String host, int port)
+			throws UnknownHostException, IOException {
 		sock = new Socket(host, port);
 		dos = new DataOutputStream(sock.getOutputStream());
         dis = new DataInputStream(sock.getInputStream());
@@ -34,7 +30,7 @@ public class ServerConnection {
 	 * Close the connection to the server.
 	 * @throws IOException
 	 */
-	public static void close() throws IOException {
+	public void close() throws IOException {
         dos.flush();
         dos.close();
         sock.close();
@@ -46,8 +42,10 @@ public class ServerConnection {
 	 * 			the message to be sent.
 	 * @throws IOException
 	 */
-	public static void sendMsg(String msg) throws IOException{
-		dos.writeChars(msg);
+	public void sendMsg(String msg) throws IOException{
+		msg = msg + '\u0000';
+		byte[] b = msg.getBytes("UTF-8");
+		dos.write(b);
 		dos.flush();
 	}
 
@@ -56,9 +54,17 @@ public class ServerConnection {
 	 * @return the message sent by the server.
 	 * @throws IOException
 	 */
-	@SuppressWarnings("deprecation")
-	public static String readMsg() throws IOException{
-		return dis.readLine();
+	public String readMsg() throws IOException{
+		//return dis.readLine();
+		StringBuilder sb = new StringBuilder();
+		while (true) {
+			int ch = dis.read();
+			if (ch == -1) throw new EOFException();
+			if (ch == 0) break; // you read a NULL
+			sb.append((char)ch);
+		}
+		String str = sb.toString();
+		return str;
 	}
 
 	/**
@@ -66,15 +72,22 @@ public class ServerConnection {
 	 * @param args
 	 */
 	public static void main(String args[]){
+		ServerConnection server = null;
 		try {
-			ServerConnection.connect();
-			ServerConnection.sendMsg("Hello!!");
-			System.out.println(ServerConnection.readMsg());
-		} catch (IOException e) {
+			server = new ServerConnection();
+			server.connect("localhost", 12300);
+			Messages msg = new Messages();
+			server.sendMsg(msg.createAuthRequestMsg("1", "1"));
+			System.out.println("Authentication message sent.");
+			while(true){
+				Thread.sleep(1000);	// wait 1 second
+				System.out.println(server.readMsg());
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				ServerConnection.close();
+				server.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

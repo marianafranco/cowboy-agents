@@ -10,6 +10,7 @@ desired_role(leadership,leader).
 /* Initial goals */
 
 !create_group. // initial goal
+!connect_to_server.	// I want to connect to the server
 
 // create a group to the team
 +!create_group : true 
@@ -20,7 +21,7 @@ desired_role(leadership,leader).
 	  .print("Sub-group ","leadership"," created");
 	  jmoise.create_group(capture,VAQUEIROS,VAQUEIROS);
 	  .print("Sub-group ","capture"," created");
-	  jmoise.create_group(capture,VAQUEIROS,VAQUEIROS);
+	  jmoise.create_group(sabotage,VAQUEIROS,VAQUEIROS);
 	  .print("Sub-group ","sabotage"," created").
 -!create_group[error_msg(M),code(C),code_line(L)]
    <- .print("Error creating group, command: ",C,", line ",L,", message: ",M).

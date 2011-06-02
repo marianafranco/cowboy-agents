@@ -14,6 +14,8 @@ MAS cowboy_agents {
                   agentArchClass jmoise.OrgManager;
 
    		leader      agentArchClass jmoise.OrgAgent;
+   		cheat      	agentArchClass jmoise.OrgAgent;
+   		cowboy     	#2 agentArchClass jmoise.OrgAgent;
 
    classpath: "lib/moise.jar";"lib/jmoise.jar";
    aslSourcePath: "src/asl";
