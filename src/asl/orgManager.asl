@@ -1,1 +1,1 @@
-/* nothing here, everything is implemented in the arhitecture */
+/* nothing here, everything is implemented in the architecture */

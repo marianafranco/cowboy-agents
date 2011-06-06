@@ -29,14 +29,9 @@
             </links>
             
         	<sub-groups>
-	        	<group-specification id="leadership">
-	        		<roles>
-                        <role id="leader"   min="1" max="1" />
-                    </roles>
-	        	</group-specification>
-	        	
 	        	<group-specification id="capture">
 	        		<roles>
+	        			<role id="leader"   min="1" max="1" />
                         <role id="captor"   min="0" max="20" />
                     </roles>
 	        	</group-specification>
@@ -57,9 +52,50 @@
 
 	<!-- FUNCIONAL SPECIFICATION -->
 	<functional-specification>
+		<scheme id="catchCowScheme" >
+
+			<goal id="catchCow" min="1">
+				<plan operator="sequence">
+					<goal id="g1" min="1" ds="saw a cow" />
+					<goal id="g2" ds="get cow id">
+						<plan operator="parallel">
+							<goal id="g21" min="1" ds="send cow id" />
+							<goal id="g22" min="1" ds="receive cow id" />
+						</plan>
+					</goal>
+					<goal id="g3" ds="send instructions to capture the cow">
+						<plan operator="parallel">
+							<goal id="g31" min="1" ds="send orders" />
+							<goal id="g32" min="1" ds="receive orders" />
+						</plan>
+					</goal>
+					<goal id="g4" min="1" ds="enclose cow" />
+					<goal id="g5" min="1" ds="open fence" />
+					<goal id="g6" min="1" ds="close fence" />
+				</plan>
+			</goal>
+			
+			<mission id="m1" min="1">
+                <goal id="g1" />
+                <goal id="g21" />
+                <goal id="g32" />
+                <goal id="g4" />
+            </mission>
+            <mission id="m2" min="1" max="1">
+                <goal id="g1" />
+                <goal id="g22" />
+                <goal id="g31" />
+                <goal id="g4" />
+                <goal id="g5" />
+                <goal id="g6" />
+            </mission>
+
+		</scheme>
 	</functional-specification>
 
 	<!-- NORMATIVE SPECIFICATION -->
 	<normative-specification>
+		<norm id="n1" type="obligation" role="captor" mission="m1" />
+        <norm id="n2" type="obligation" role="leader" mission="m2" />
 	</normative-specification>
 </organisational-specification>

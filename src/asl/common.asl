@@ -13,8 +13,7 @@
 // adopts a role
 +group(GrSpec,Id)
 	: desired_role(GrSpec,Role)
-	<-
-		jmoise.adopt_role(Role,Id);
+	<- jmoise.adopt_role(Role,Id);
 		.print(Role," on group ",GrSpec," created").
 
 /* Functional events */

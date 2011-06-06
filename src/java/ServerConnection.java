@@ -7,12 +7,13 @@ import java.net.UnknownHostException;
 
 /**
  * Class with static methods to connect to the server and communicate with it.
+ * 
  * @author Mariana Ramos Franco
  */
 public class ServerConnection {
-	private static Socket sock;
-	private static DataOutputStream dos;
-    private static DataInputStream dis;
+	private Socket sock;
+	private DataOutputStream dos;
+    private DataInputStream dis;
 
 	/**
 	 * Connect to the server on the specified host and port.
@@ -55,7 +56,6 @@ public class ServerConnection {
 	 * @throws IOException
 	 */
 	public String readMsg() throws IOException{
-		//return dis.readLine();
 		StringBuilder sb = new StringBuilder();
 		while (true) {
 			int ch = dis.read();
