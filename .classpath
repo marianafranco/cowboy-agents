@@ -4,5 +4,7 @@
 	<classpathentry kind="src" path="src/asl"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jason.jar"/>
+	<classpathentry kind="lib" path="lib/jmoise.jar"/>
+	<classpathentry kind="lib" path="lib/moise.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

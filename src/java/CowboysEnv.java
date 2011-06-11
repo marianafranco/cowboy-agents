@@ -70,17 +70,6 @@ public class CowboysEnv extends Environment {
     			return false;
     		}
     		return true;
-    	// connects to the server
-    	} else if (action.getFunctor().equals("disconnectFromServer")) {
-    		try {
-        		disconnectFromServer(agName);
-    		} catch (Exception e) {
-    			final String msg = "Error when disconnecting from the server: "
-    				+ e.getLocalizedMessage();
-    			logger.log(Level.SEVERE, msg, e);
-    			return false;
-    		}
-    		return true;
     	// authentication
     	} else if (action.getFunctor().equals("authentication")) {
     		//String role = action.getTerm(0).toString();
@@ -183,6 +172,9 @@ public class CowboysEnv extends Environment {
 					String msg = server.readMsg();
 					String type = Messages.parseMsg(msg);
 					updateAgPercept(agName, type, msg);
+					if (type.equals("bye")){
+						break;
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 					final String msg = "Error when receiving a message from the server: "
@@ -214,7 +206,7 @@ public class CowboysEnv extends Environment {
     	} else if (type.equals("sim-end")) {
     		
     	} else if (type.equals("bye")) {
-    		
+    		disconnectFromServer(agName);
     	} else if (type.equals("request-action")) {
     		
     	}
@@ -250,10 +242,22 @@ public class CowboysEnv extends Environment {
     private void updateSimStartPercept(String agName, String msgReceived)
     		throws ParserConfigurationException, SAXException, IOException {
     	HashMap<String, String> simValues = Messages.parseSimStart(msgReceived);
-    	for (Entry<String, String> entry : simValues.entrySet()) {
-    		addPercept(agName, Literal.parseLiteral(
-    				"simulation(" + entry.getKey() + "," + entry.getValue() + ")"));
-    	}
+    	String id = simValues.get("id");
+    	String opponent = simValues.get("opponent");
+    	String steps = simValues.get("steps");
+    	String corralx0 = simValues.get("corralx0");
+    	String corralx1 = simValues.get("corralx1");
+    	String corraly0 = simValues.get("corraly0");
+    	String corraly1 = simValues.get("corraly1");
+    	String gsizex = simValues.get("gsizex");
+    	String gsizey = simValues.get("gsizey");
+    	// simulation(id,opponent,steps,corralx0,corralx1,corraly0,corraly1,gsizex,gsizey)
+    	addPercept(agName, Literal.parseLiteral(
+				"simulation(" + id + "," + opponent + "," + steps
+				+ "," + corralx0 + "," + corralx1 + "," + corraly0
+				+ "," + corraly1 + "," + gsizex + "," + gsizey
+				+ ")"));
+    	logger.info("[" + agName + "] Received a sim-start message");
     }
 
     /** Called before the end of MAS execution */

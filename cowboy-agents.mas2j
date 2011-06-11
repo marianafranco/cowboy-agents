@@ -13,9 +13,14 @@ MAS cowboy_agents {
 		orgManager [osfile="cowboy-agents-os.xml",gui=yes] 
                   agentArchClass jmoise.OrgManager;
 
-   		leader      agentArchClass jmoise.OrgAgent;
+   		leader
+   			agentArchClass jmoise.OrgAgent 
+   			agentArchClass CowboyArch;
+   			
    		cheat      	agentArchClass jmoise.OrgAgent;
-   		cowboy     	#2 agentArchClass jmoise.OrgAgent;
+   		cowboy     	#2
+   			agentArchClass jmoise.OrgAgent 
+   			agentArchClass CowboyArch;
 
    classpath: "lib/moise.jar";"lib/jmoise.jar";
    aslSourcePath: "src/asl";

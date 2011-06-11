@@ -40,7 +40,7 @@ public class Messages {
 
 	/** Simulation attributes */
 	private static final String[] simulationAttrs = {"corralx0", "corralx1",
-		"corraly0", "corraly1", "gsizex", "gsizey", "id", "lineOfSight",
+		"corraly0", "corraly1", "gsizex", "gsizey", "id",
 		"opponent", "steps"};
 
 	/**
