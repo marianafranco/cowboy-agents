@@ -1,3 +1,5 @@
+package env;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -290,7 +292,9 @@ public class CowboysEnv extends Environment {
 				"perception(" + id + "," + posx + "," + posy
 				+ "," + score + "," + step + "," + deadline
 				+ ")"));
-    	List<String> cells = Messages.parseRequestActionCells(msgReceived);
+    	int x = Integer.parseInt(posx);
+    	int y = Integer.parseInt(posy);
+    	List<String> cells = Messages.parseRequestActionCells(msgReceived, x, y);
     	for (String cell : cells) {
     		// cell(x,y,content,contentAttr)
     		addPercept(agName, Literal.parseLiteral(cell));

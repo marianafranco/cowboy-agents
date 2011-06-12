@@ -59,7 +59,12 @@ desired_mission(catchCowScheme,m2).
 +sim_start(SimId): true
 	<- .print("Simulation started").
 
-
+// find a free random location    
+random_pos(X,Y) :- 
+   pos(AgX,AgY,_) &
+   jia.random(RX,20)   & X = (RX-10)+AgX & X > 0 &
+   jia.random(RY,20,5) & Y = (RY-10)+AgY &
+   not jia.obstacle(X,Y).
 
 /*
 +!g1[scheme(Sch)] : true

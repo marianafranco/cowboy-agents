@@ -1,3 +1,4 @@
+package env;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -236,7 +237,7 @@ public class Messages {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	public static List<String> parseRequestActionCells(String xml)
+	public static List<String> parseRequestActionCells(String xml, int posx, int posy)
 			throws ParserConfigurationException, SAXException, IOException {
 		List<String> cells = new ArrayList<String>();
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -248,8 +249,12 @@ public class Messages {
 		for (int i = 0; i < cellsNode.getLength(); i++) {
 			Node cell = cellsNode.item(i);
 			NamedNodeMap attributes = cell.getAttributes();
-			String x = attributes.getNamedItem("x").getTextContent();
-			String y = attributes.getNamedItem("y").getTextContent();
+			// relative positions
+			int x = Integer.parseInt(attributes.getNamedItem("x").getTextContent());
+			int y = Integer.parseInt(attributes.getNamedItem("y").getTextContent());
+			// absolute positions
+			x = x + posx;
+			y = y + posy;
 			NodeList cellChilds = cell.getChildNodes();
 			for (int j = 0; j < cellChilds.getLength(); j++) {
 				if (cellChilds.item(j).getNodeType() == Element.ELEMENT_NODE) {

@@ -1,3 +1,4 @@
+package arch;
 import jason.environment.grid.Area;
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;

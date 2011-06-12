@@ -1,3 +1,5 @@
+package arch;
+
 import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +11,7 @@ import jason.JasonException;
 import jason.RevisionFailedException;
 import jason.asSemantics.Message;
 import jason.asSyntax.Literal;
+import jason.asSyntax.NumberTerm;
 import jason.environment.grid.Location;
 import jason.mas2j.ClassParameters;
 import jason.runtime.Settings;
@@ -111,12 +114,9 @@ public class CowboyArch extends OrgAgent {
      * 			the cell perceived.
      */
     private void cellPerceived(Literal p) {
-    	// relative positions
+    	// absolute positions
     	int x =  Integer.parseInt(p.getTerm(0).toString().replace("(", "").replace(")", ""));
     	int y =  Integer.parseInt(p.getTerm(1).toString().replace("(", "").replace(")", ""));
-    	// absolute positions
-    	x = model.getAgPos(getMyId()).x + x;
-    	y = model.getAgPos(getMyId()).y + y;
     	String content = p.getTerm(2).toString();
     	String contentAttr = p.getTerm(3).toString();
     	// update the model with the enemy location and share them with other agents
@@ -186,6 +186,11 @@ public class CowboyArch extends OrgAgent {
     			fence = WorldModel.OPEN_FENCE;
     		}
     		if (!model.hasObject(fence, x, y)) {
+    			if (content.equals("true") && !model.hasObject(WorldModel.CLOSED_FENCE, x, y)) {
+    				model.remove(WorldModel.CLOSED_FENCE, x, y);
+    			} else if (content.equals("false") && !model.hasObject(WorldModel.OPEN_FENCE, x, y)) {
+    				model.remove(WorldModel.OPEN_FENCE, x, y);
+    			}
                 model.add(fence, x, y);
                 Message m = new Message("tell", null, null, p);
                 try {
@@ -263,6 +268,98 @@ public class CowboyArch extends OrgAgent {
     	}
     }
 
+    @Override
+    public void checkMail() {
+        try {
+            super.checkMail();
+
+            // remove messages related to obstacles/cows/fences/corral/agent_position
+            // and update the model
+            Iterator<Message> im = getTS().getC().getMailBox().iterator();
+            while (im.hasNext()) {
+            	Message m  = im.next();
+                String  ms = m.getPropCont().toString();
+                // received "cell(x,y,content,contentAttr)"
+                if (ms.startsWith("cell") && model != null) {
+                	Literal p = (Literal)m.getPropCont();
+                    int x = (int)((NumberTerm)p.getTerm(0)).solve();
+                    int y = (int)((NumberTerm)p.getTerm(1)).solve();
+                    String content = p.getTerm(2).toString();
+                    String contentAttr = p.getTerm(3).toString();
+                    // obstacle
+                    if (content.equals("obstacle")) {
+                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.OBSTACLE, x, y)) {
+                            model.add(WorldModel.OBSTACLE, x, y);
+                        }
+                        im.remove();
+                    // cow
+                    } else if (content.equals("cow")) {
+                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.COW, x, y)) {
+                            model.add(WorldModel.COW, x, y);
+                        }
+                        im.remove();
+                    // enemy
+                    } else if (content.equals("agent") && contentAttr.equals("enemy")) {
+                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.ENEMY, x, y)) {
+                            model.add(WorldModel.ENEMY, x, y);
+                        }
+                        im.remove();
+                    // fence
+                    } else if (content.equals("fence")) {
+                    	int fence = WorldModel.CLOSED_FENCE;
+                		if (contentAttr.equals("true")){
+                			fence = WorldModel.OPEN_FENCE;
+                		}
+                		if (model.inGrid(x,y) && !model.hasObject(fence, x, y)) {
+                			if (content.equals("true") && !model.hasObject(WorldModel.CLOSED_FENCE, x, y)) {
+                				model.remove(WorldModel.CLOSED_FENCE, x, y);
+                			} else if (content.equals("false") && !model.hasObject(WorldModel.OPEN_FENCE, x, y)) {
+                				model.remove(WorldModel.OPEN_FENCE, x, y);
+                			}
+                            model.add(fence, x, y);
+                        }
+                        im.remove();
+                    // corral
+                    } else if (content.equals("corral") && contentAttr.equals("enemy")) {
+                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.ENEMY_CORRAL, x, y)) {
+                            model.add(WorldModel.ENEMY_CORRAL, x, y);
+                        }
+                        im.remove();
+                    // switch
+                    } else if (content.equals("switch")) {
+                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.SWITCH, x, y)) {
+                            model.add(WorldModel.SWITCH, x, y);
+                        }
+                        im.remove();
+                    // empty
+                    } else if (content.equals("empty")) {
+                    	if (model.inGrid(x,y) && !model.isFree(x, y)) {
+                			model.add(WorldModel.CLEAN, x, y);
+                		}
+                        im.remove();
+                    }
+                } else if (ms.startsWith("my_status") && model != null) {
+                	// update others location
+                    Literal p = Literal.parseLiteral(m.getPropCont().toString());
+                    int x = (int)((NumberTerm)p.getTerm(0)).solve();
+                    int y = (int)((NumberTerm)p.getTerm(1)).solve();
+                    if (model.inGrid(x,y)) {
+                        try {
+                            int agid = getAgId(m.getSender());
+                            model.setAgPos(agid, x, y);
+                            model.incVisited(x, y);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    im.remove(); 
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error checking email!",e);
+        }
+    }
+
 	void setSimId(String id) {
         simId = id;
     }
@@ -285,4 +382,8 @@ public class CowboyArch extends OrgAgent {
 			return (Integer.parseInt(agName.substring(agName.length()-1)));
 		}
 	}
+
+	public WorldModel getModel() {
+        return model;
+    }
 }
