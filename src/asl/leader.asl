@@ -56,6 +56,12 @@ desired_mission(catchCowScheme,m2).
 	<- jmoise.create_scheme(catchCowScheme,[GId]);
 	.print("Scheme created").
 
++sim_start(SimId): true
+	<- .print("Simulation started").
+
+
+
+/*
 +!g1[scheme(Sch)] : true
 	<- .print("Goal g1 satisfied!");
 		jmoise.set_goal_state(Sch,g1,satisfied).
@@ -79,3 +85,4 @@ desired_mission(catchCowScheme,m2).
 +!g6[scheme(Sch)] : true
 	<- .print("Goal g6 satisfied!");
 		jmoise.set_goal_state(Sch,g1,satisfied).
+*/

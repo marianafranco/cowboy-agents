@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 /**
- * Class with static methods to connect to the server and communicate with it.
+ * Class with methods to connect to the server and communicate with it.
  * 
  * @author Mariana Ramos Franco
  */
@@ -76,8 +76,7 @@ public class ServerConnection {
 		try {
 			server = new ServerConnection();
 			server.connect("localhost", 12300);
-			Messages msg = new Messages();
-			server.sendMsg(msg.createAuthRequestMsg("1", "1"));
+			server.sendMsg(Messages.createAuthRequestMsg("1", "1"));
 			System.out.println("Authentication message sent.");
 			while(true){
 				Thread.sleep(1000);	// wait 1 second

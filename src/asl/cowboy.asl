@@ -24,6 +24,8 @@ desired_mission(catchCowScheme,m1).
 
 
 /* Plans */
+
+/*
 +!g1[scheme(Sch)] : true
 	<- .print("Goal g1 satisfied!");
 		jmoise.set_goal_state(Sch,g1,satisfied).
@@ -39,3 +41,4 @@ desired_mission(catchCowScheme,m1).
 +!g4[scheme(Sch)] : true
 	<- .print("Goal g4 satisfied!");
 		jmoise.set_goal_state(Sch,g4,satisfied).
+*/

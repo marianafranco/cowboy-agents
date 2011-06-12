@@ -1,9 +1,11 @@
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -32,8 +34,6 @@ import org.xml.sax.SAXException;
  */
 public class Messages {
 
-	private Document document;
-
 	/** Action's types */
 	private static final String[] actions = {"skip", "north", "northeast",
 		"east", "southeast", "south", "southwest", "west", "northwest"};
@@ -42,6 +42,10 @@ public class Messages {
 	private static final String[] simulationAttrs = {"corralx0", "corralx1",
 		"corraly0", "corraly1", "gsizex", "gsizey", "id",
 		"opponent", "steps"};
+
+	/** Request action perceptions */
+	private static final String[] requestActionPerceptions = {"deadline",
+		"id", "posx", "posy", "score", "step"};
 
 	/**
 	 * Creates an authentication request message.
@@ -53,13 +57,16 @@ public class Messages {
 	 * @throws ParserConfigurationException
 	 * @throws TransformerException
 	 */
-	public String createAuthRequestMsg(String username, String password)
+	public static String createAuthRequestMsg(String username, String password)
 			throws ParserConfigurationException, TransformerException {
-		initDoc();
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		Document document = docBuilder.newDocument();
+		document.setXmlStandalone(true);
 		Element auth = document.createElement("authentication");
 		auth.setAttribute("username", username);
 		auth.setAttribute("password", password);
-		String xmlString = createXML("auth-request", auth);
+		String xmlString = createXML("auth-request", auth, document);
 		return xmlString;
 	}
 
@@ -72,17 +79,20 @@ public class Messages {
 	 * @return the action message.
 	 * @throws Exception
 	 */
-	public String createActionMsg(String id, String type)
+	public static String createActionMsg(String id, String type)
 			throws Exception {
 		Set<String> actionsSet = new HashSet<String>(Arrays.asList(actions));
 		if (!actionsSet.contains(type)) {
 			throw new Exception("Invalid action type: " + type);
 		}
-		initDoc();
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		Document document = docBuilder.newDocument();
+		document.setXmlStandalone(true);
 		Element action = document.createElement("action");
 		action.setAttribute("id", id);
 		action.setAttribute("type", type);
-		String xmlString = createXML("action", action);
+		String xmlString = createXML("action", action, document);
 		return xmlString;
 	}
 
@@ -92,11 +102,13 @@ public class Messages {
 	 * 			the message type.
 	 * @param content
 	 * 			the message content.
+	 * @param document
+	 * 			the document object.
 	 * @return the XML message.
 	 * @throws ParserConfigurationException
 	 * @throws TransformerException
 	 */
-	private String createXML(String type, Element content)
+	private static String createXML(String type, Element content, Document document)
 			throws ParserConfigurationException, TransformerException{
 		Element rootElement = document.createElement("message");
 		rootElement.setAttribute("type", type);
@@ -111,17 +123,6 @@ public class Messages {
 		StreamResult result =  new StreamResult(sw);
 		transformer.transform(source, result);
 		return sw.toString();
-	}
-
-	/**
-	 * Init the 'document' attribute used to create new XML messages.
-	 * @throws ParserConfigurationException
-	 */
-	private void initDoc() throws ParserConfigurationException{
-		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-		document = docBuilder.newDocument();
-		document.setXmlStandalone(true);
 	}
 
 	/**
@@ -199,14 +200,84 @@ public class Messages {
 	}
 
 	/**
+	 * Parses the request-action message received from the server and returns
+	 * the perception values.
+	 * @param xml
+	 * 			the request-action message.
+	 * @return a HashMap where the keys are perception attributes.
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	public static HashMap<String, String> parseRequestActionPerception(String xml)
+			throws ParserConfigurationException, SAXException, IOException {
+		HashMap<String, String> perceptionValues = new HashMap<String, String>();
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		InputSource inStream = new InputSource();
+		inStream.setCharacterStream(new StringReader(xml));
+		Document doc = docBuilder.parse(inStream);
+		NodeList perceptionNode = doc.getElementsByTagName("perception");
+		NamedNodeMap attributes = perceptionNode.item(0).getAttributes();
+		for (String attribute : requestActionPerceptions) {
+			Node attrNode = attributes.getNamedItem(attribute);
+			String attrValue = attrNode.getTextContent();
+			perceptionValues.put(attribute, attrValue);
+		}
+		return perceptionValues;
+	}
+
+	/**
+	 * Parse the cells send on the request-action message.
+	 * @param xml
+	 * 			the request-action message.
+	 * @return a List with all the cell's values.
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	public static List<String> parseRequestActionCells(String xml)
+			throws ParserConfigurationException, SAXException, IOException {
+		List<String> cells = new ArrayList<String>();
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		InputSource inStream = new InputSource();
+		inStream.setCharacterStream(new StringReader(xml));
+		Document doc = docBuilder.parse(inStream);
+		NodeList cellsNode = doc.getElementsByTagName("cell");
+		for (int i = 0; i < cellsNode.getLength(); i++) {
+			Node cell = cellsNode.item(i);
+			NamedNodeMap attributes = cell.getAttributes();
+			String x = attributes.getNamedItem("x").getTextContent();
+			String y = attributes.getNamedItem("y").getTextContent();
+			NodeList cellChilds = cell.getChildNodes();
+			for (int j = 0; j < cellChilds.getLength(); j++) {
+				if (cellChilds.item(j).getNodeType() == Element.ELEMENT_NODE) {
+					Element cellContent = (Element)cellChilds.item(j);
+					String content = cellContent.getNodeName();
+					String contentAttr = "null";
+					if (content.equals("agent") || content.equals("corral")) {
+						contentAttr = cellContent.getAttributes().getNamedItem("type").getTextContent();
+					} else if (content.equals("cow")) {
+						contentAttr = cellContent.getAttributes().getNamedItem("ID").getTextContent();
+					} else if (content.equals("fence")) {
+						contentAttr = cellContent.getAttributes().getNamedItem("open").getTextContent();
+					}
+					cells.add("cell(" + x + "," + y + "," + content + "," + contentAttr + ")");
+				}
+			}
+		}
+		return cells;
+	}
+
+	/**
 	 * Main method used to test the createMsg methods.
 	 * @param args
 	 */
 	public static void main(String args[]) {
 		try {
-			Messages msg = new Messages();
-			System.out.println(msg.createAuthRequestMsg("leader", "123"));
-			System.out.println(msg.createActionMsg("10", "north"));
+			System.out.println(Messages.createAuthRequestMsg("leader", "123"));
+			System.out.println(Messages.createActionMsg("10", "north"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

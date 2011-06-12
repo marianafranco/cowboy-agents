@@ -56,7 +56,7 @@
 
 			<goal id="catchCow" min="1">
 				<plan operator="sequence">
-					<goal id="g1" min="1" ds="saw a cow" />
+					<goal id="g1" min="1" ds="find a cow" />
 					<goal id="g2" ds="get cow id">
 						<plan operator="parallel">
 							<goal id="g21" min="1" ds="send cow id" />

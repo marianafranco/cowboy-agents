@@ -2,7 +2,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +47,12 @@ public class CowboysEnv extends Environment {
 			logger.log(Level.SEVERE, msg, e);
 		}
 		connections = new HashMap<String, ServerConnection>();
+    }
+
+    /** Called before the end of MAS execution */
+    @Override
+    public void stop() {
+        super.stop();
     }
 
     /**
@@ -130,8 +136,7 @@ public class CowboysEnv extends Environment {
     		throws ParserConfigurationException, TransformerException, IOException {
 		final String username = props.getProperty(agName + ".username");
 		final String password = props.getProperty(agName + ".password");
-		Messages msg = new Messages();
-		String authRequest = msg.createAuthRequestMsg(username, password);
+		String authRequest = Messages.createAuthRequestMsg(username, password);
 		ServerConnection server = connections.get(agName);
 		logger.info("[" + agName + "] Requesting authentication.");
 		server.sendMsg(authRequest);
@@ -204,11 +209,12 @@ public class CowboysEnv extends Environment {
     	} else if (type.equals("sim-start")) {
     		updateSimStartPercept(agName, msgReceived);
     	} else if (type.equals("sim-end")) {
-    		
+    		// TODO: falta fazer isso!
+
     	} else if (type.equals("bye")) {
     		disconnectFromServer(agName);
     	} else if (type.equals("request-action")) {
-    		
+    		updateRequestActionPercept(agName, msgReceived);
     	}
     }
 
@@ -230,7 +236,7 @@ public class CowboysEnv extends Environment {
     }
 
     /**
-     * Adds the simulation(attr, value) percept to the agent.
+     * Adds the simulation percept to the agent.
      * @param agName
      * 			the agents name.
      * @param msgReceived
@@ -260,9 +266,34 @@ public class CowboysEnv extends Environment {
     	logger.info("[" + agName + "] Received a sim-start message");
     }
 
-    /** Called before the end of MAS execution */
-    @Override
-    public void stop() {
-        super.stop();
+    /**
+     * Adds the request-action percept to the agent.
+     * @param agName
+     * 			the agents name.
+     * @param msgReceived
+     * 			the received request-action message.
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     */
+    private void updateRequestActionPercept(String agName, String msgReceived)
+    		throws ParserConfigurationException, SAXException, IOException{
+    	HashMap<String, String> perceptionValues = Messages.parseRequestActionPerception(msgReceived);
+    	String id = perceptionValues.get("id");
+    	String posx = perceptionValues.get("posx");
+    	String posy = perceptionValues.get("posy");
+    	String score = perceptionValues.get("score");
+    	String step = perceptionValues.get("step");
+    	String deadline = perceptionValues.get("deadline");
+    	// perception(id,posx,posy,score,step,deadline)
+    	addPercept(agName, Literal.parseLiteral(
+				"perception(" + id + "," + posx + "," + posy
+				+ "," + score + "," + step + "," + deadline
+				+ ")"));
+    	List<String> cells = Messages.parseRequestActionCells(msgReceived);
+    	for (String cell : cells) {
+    		// cell(x,y,content,contentAttr)
+    		addPercept(agName, Literal.parseLiteral(cell));
+    	}
     }
 }
