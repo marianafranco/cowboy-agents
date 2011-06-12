@@ -71,3 +71,14 @@
 	<- authentication.
 -!authenticate_to_server[error_msg(M),code(C),code_line(L)]
    <- .print("Error authenticating to the server, command: ",C,", line ",L,", message: ",M).
+
+
+// search cow
++!search_cow(near_unvisited)
+   :  pos(X,Y,_) & 
+      jia.near_least_visited(X,Y,ToX,ToY)
+   <- !pos(ToX,ToY);
+      !!search_cow(near_unvisited).
+
++!search_cow(near_unvisited) : true
+   <- !!search_cow(near_unvisited).

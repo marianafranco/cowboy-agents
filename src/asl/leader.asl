@@ -9,6 +9,7 @@ desired_mission(catchCowScheme,m2).
 
 // include common plans for MOISE+ agents
 { include("common.asl") }
+{ include("moving.asl") }
 
 /* Initial goals */
 
@@ -55,16 +56,10 @@ desired_mission(catchCowScheme,m2).
 +auth(ok): play(Me,leader,GId) & .my_name(Me)
 	<- jmoise.create_scheme(catchCowScheme,[GId]);
 	.print("Scheme created").
-
+	
 +sim_start(SimId): true
-	<- .print("Simulation started").
-
-// find a free random location    
-random_pos(X,Y) :- 
-   pos(AgX,AgY,_) &
-   jia.random(RX,20)   & X = (RX-10)+AgX & X > 0 &
-   jia.random(RY,20,5) & Y = (RY-10)+AgY &
-   not jia.obstacle(X,Y).
+	<- .print("Simulation started");
+	!search_cow(near_unvisited).
 
 /*
 +!g1[scheme(Sch)] : true

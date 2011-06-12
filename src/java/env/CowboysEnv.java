@@ -80,7 +80,6 @@ public class CowboysEnv extends Environment {
     		return true;
     	// authentication
     	} else if (action.getFunctor().equals("authentication")) {
-    		//String role = action.getTerm(0).toString();
     		try {
 				authentication(agName);
 			} catch (Exception e) {
@@ -90,12 +89,24 @@ public class CowboysEnv extends Environment {
 				return false;
 			}
 			return true;
+		// move actions "do(type,id)"
+    	} else if (action.getFunctor().equals("do")) {
+    		String type = action.getTerm(0).toString();
+    		String id = action.getTerm(1).toString();
+    		try {
+				sendAction(agName, type, id);
+			} catch (Exception e) {
+				final String msg = "Error to send action: "
+					+ e.getLocalizedMessage();
+				logger.log(Level.SEVERE, msg, e);
+				return false;
+			}
+    		return true;
     	} else {
 			logger.info("executing: "+action+", but not implemented!");
 			return false;
 		}
     }
-
 
     /**
      * Connects to the server.
@@ -156,6 +167,23 @@ public class CowboysEnv extends Environment {
     		ServerConnection server) {
     	MonitorThread monitor = new MonitorThread(agName, server);
     	monitor.start();
+    }
+
+    /**
+     * Sends the action message to the server.
+     * @param agName
+     * 			the agents name.
+     * @param actionType
+     * 			the action's type.
+     * @param actionId
+     * 			the action's id.
+     * @throws Exception
+     */
+    private void sendAction(String agName, String actionType, String actionId)
+    		throws Exception {
+    	String action = Messages.createActionMsg(actionId, actionType);
+    	ServerConnection server = connections.get(agName);
+    	server.sendMsg(action);
     }
 
     /**
@@ -287,6 +315,9 @@ public class CowboysEnv extends Environment {
     	String score = perceptionValues.get("score");
     	String step = perceptionValues.get("step");
     	String deadline = perceptionValues.get("deadline");
+    	// pos(x, y, actionId)
+    	Literal p = Literal.parseLiteral("pos(" + posx + "," + posy + "," + id + ")");
+    	addPercept(agName, p);
     	// perception(id,posx,posy,score,step,deadline)
     	addPercept(agName, Literal.parseLiteral(
 				"perception(" + id + "," + posx + "," + posy

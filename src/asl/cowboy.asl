@@ -9,6 +9,7 @@ desired_mission(catchCowScheme,m1).
 
 // include common plans for MOISE+ agents
 { include("common.asl") }
+{ include("moving.asl") }
 
 /* Initial goals */
 
@@ -24,6 +25,10 @@ desired_mission(catchCowScheme,m1).
 
 
 /* Plans */
+
++sim_start(SimId): true
+	<- .print("Simulation started");
+	!search_cow(near_unvisited).
 
 /*
 +!g1[scheme(Sch)] : true

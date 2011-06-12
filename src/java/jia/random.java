@@ -11,6 +11,7 @@ import jason.asSyntax.Term;
 import java.util.Random;
 import java.util.Iterator;
 
+@SuppressWarnings("serial")
 public class random extends DefaultInternalAction {
     
     private Random random = new Random();    

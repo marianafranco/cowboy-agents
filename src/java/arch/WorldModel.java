@@ -23,6 +23,7 @@ public class WorldModel extends GridWorldModel {
     Area corral;
 
     int[][] visited; // count the visited locations
+    int minVisited = 0; // min value for near least visited
 
 	public WorldModel(int w, int h, int nbAgs) {
 		super(w, h, nbAgs);
@@ -69,5 +70,75 @@ public class WorldModel extends GridWorldModel {
             	}
             }
     	}
+    }
+
+    public int getVisited(Location l) {
+        return visited[l.x][l.y];
+    }
+
+    /** returns the near location of x,y that was least visited */
+    public Location getNearLeastVisited(int agx, int agy) {
+        Location agloc = new Location(agx,agy);        
+        while (true) {
+            int x = agx;
+            int y = agy;
+            int w = 1; 
+            int dx = 0;
+            int dy = 0;
+            int stage = 1;
+            Location better = null;
+            
+            while (w < getWidth()) {
+                switch (stage) {
+                    case 1: if (dx < w) {
+                                dx++;
+                                break;
+                            } else {
+                                stage = 2; 
+                            }
+                    case 2: if (dy < w) {
+                                dy++;
+                                break;
+                            } else {
+                                stage = 3;
+                            }
+                    case 3: if (dx > 0) {
+                                dx--;
+                                break;
+                            } else {
+                                stage = 4;
+                            }
+                    case 4: if (dy > 0) {
+                                dy--;
+                                break;
+                            } else {
+                                stage = 1;
+                                x--;
+                                y--;
+                                w += 2;
+                            }
+                }
+                
+                Location l = new Location(x+dx,y+dy);
+                if (isFree(l) && !l.equals(agloc)) {
+                    if (visited[l.x][l.y] < minVisited) { // a place better then minVisited! go there
+                        return l;
+                    } if (visited[l.x][l.y] == minVisited) { // a place in the minVisited level
+                        if (better == null) {
+                            better = l;
+                        } else if (l.distance(agloc) < better.distance(agloc)) {
+                            better = l;
+                        } else if (l.distance(agloc) == better.distance(agloc) && random.nextBoolean()) { // to chose ramdomly equal options
+                            better = l;
+                        }
+                    }
+                }
+            } // end while
+
+            if (better != null) {
+                return better;
+            }
+            minVisited++;
+        }
     }
 }

@@ -11,6 +11,7 @@ import jason.asSyntax.NumberTerm;
 import jason.asSyntax.Term;
 import arch.CowboyArch;
 
+@SuppressWarnings("serial")
 public class obstacle extends DefaultInternalAction {
     
     @Override

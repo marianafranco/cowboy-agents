@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="lib/jason.jar"/>
 	<classpathentry kind="lib" path="lib/jmoise.jar"/>
 	<classpathentry kind="lib" path="lib/moise.jar"/>
+	<classpathentry kind="lib" path="lib/search.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

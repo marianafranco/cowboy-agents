@@ -272,7 +272,6 @@ public class CowboyArch extends OrgAgent {
     public void checkMail() {
         try {
             super.checkMail();
-
             // remove messages related to obstacles/cows/fences/corral/agent_position
             // and update the model
             Iterator<Message> im = getTS().getC().getMailBox().iterator();

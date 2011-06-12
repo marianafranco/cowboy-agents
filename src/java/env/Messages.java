@@ -232,6 +232,10 @@ public class Messages {
 	 * Parse the cells send on the request-action message.
 	 * @param xml
 	 * 			the request-action message.
+	 * @param posx
+	 * 			the agent's x position.
+	 * @param posy
+	 * 			the agent's y position.
 	 * @return a List with all the cell's values.
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
