@@ -17,7 +17,14 @@ MAS cowboy_agents {
    			agentArchClass jmoise.OrgAgent 
    			agentArchClass arch.CowboyArch;
    			
-   		cheat      	agentArchClass jmoise.OrgAgent;
+   		cheat
+   			agentArchClass jmoise.OrgAgent
+   			agentArchClass arch.CowboyArch;
+   		
+   		cheat_helper
+   			agentArchClass jmoise.OrgAgent
+   			agentArchClass arch.CowboyArch;
+   			
    		cowboy     	#2
    			agentArchClass jmoise.OrgAgent 
    			agentArchClass arch.CowboyArch;

@@ -1,6 +1,7 @@
 package arch;
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +26,10 @@ public class CowboyArch extends OrgAgent {
     private String opponent = null;
     private int steps = -1;
     private int numOfCowboys = -1;
+    
+    // sabotage
+    private static List<Fence> fences = new ArrayList<Fence>();
+    private static boolean cheat_passed = false, cheat_in_position = false, helper_in_position = false;
 
     protected Logger logger = Logger.getLogger(CowboyArch.class.getName());
 
@@ -44,7 +49,15 @@ public class CowboyArch extends OrgAgent {
 				+ e.getLocalizedMessage();
 			logger.log(Level.SEVERE, msg, e);
 		}
-		numOfCowboys = Integer.parseInt(props.getProperty("numberOf.comboys")); 
+		numOfCowboys = Integer.parseInt(props.getProperty("numberOf.comboys"));
+		
+		/* Load fences positions */
+		String[] fences_pos = props.getProperty("fences.open_positions").split(" ");
+		for(int i=0; i < fences_pos.length; i++) {
+			String[] params = fences_pos[i].split(",");
+			Fence fence = new Fence( params[0], Integer.parseInt(params[1]), Integer.parseInt(params[2]) );
+			fences.add(fence);
+		}
     }
 
     @Override
@@ -406,4 +419,37 @@ public class CowboyArch extends OrgAgent {
 	public WorldModel getModel() {
         return model;
     }
+
+	public List<Fence> getFences() {
+		return fences;
+	}
+
+	public void setFences(List<Fence> fences) {
+		this.fences = fences;
+	}
+
+	public static boolean isCheat_passed() {
+		return cheat_passed;
+	}
+
+	public static void setCheat_passed(boolean cheat_passed) {
+		CowboyArch.cheat_passed = cheat_passed;
+	}
+
+	public static boolean isHelper_in_position() {
+		return helper_in_position;
+	}
+
+	public static void setHelper_in_position(boolean helper_in_position) {
+		CowboyArch.helper_in_position = helper_in_position;
+	}
+
+	public static boolean isCheat_in_position() {
+		return cheat_in_position;
+	}
+
+	public static void setCheat_in_position(boolean cheat_in_position) {
+		CowboyArch.cheat_in_position = cheat_in_position;
+	}
+
 }

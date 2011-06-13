@@ -1,1 +1,1 @@
-/* nothing here, everything is implemented in the architecture */
+/* nothing here, everything is implemented in the architecture's xml (cowboy-agents-os.xml) */

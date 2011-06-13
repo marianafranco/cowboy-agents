@@ -17,6 +17,7 @@
 			<role id="cowboy" />
         	<role id="captor"> <extends role="cowboy"/> </role>
         	<role id="cheat"> <extends role="cowboy"/> </role>
+        	<role id="cheat_helper"> <extends role="cowboy"/> </role>
         	<role id="leader"> <extends role="captor"/> </role>
 		</role-definitions>
 
@@ -39,6 +40,7 @@
 	        	<group-specification id="sabotage">
 	        		<roles>
                         <role id="cheat"   min="0" max="1" />
+                        <role id="cheat_helper"   min="0" max="1" />
                     </roles>
 	        	</group-specification>
         	</sub-groups>
@@ -91,11 +93,53 @@
             </mission>
 
 		</scheme>
+		
+		<scheme id="disruptEnemyScheme">
+			<goal id="disruptEnemy" min="0" ds="disturb enemy when enclosing cows inside fences">
+				<plan operator="sequence">
+					<goal id="g1" ds="move to enemy's fence switch and open it" >
+						<plan operator="sequence">
+							<goal id="g11" ds="locate a fence" />
+							<goal id="g12" ds="pass through the fence" >
+								<plan operator="sequence">
+									<goal id="g121" >
+										<plan operator="parallel">
+											<goal id="g1211" ds="open the fence from inside" />
+											<goal id="g1212" ds="walk through the fence" />
+										</plan>
+									</goal>
+									<goal id="g122">
+										<plan operator="parallel">
+											<goal id="g1221" ds="open the fence from the other side" />
+											<goal id="g1222" ds="walk through the fence" />
+										</plan>
+									</goal>
+								</plan>
+							</goal>
+						</plan>
+					</goal>
+				</plan>
+			</goal>
+			
+			<mission id="m101" min="0" max="1">
+				<goal id="g11" />
+				<goal id="g1211" />
+				<goal id="g1222" />
+			</mission>
+			
+			<mission id="m102" min="0" max="1">
+				<goal id="g11" />
+				<goal id="g1212" />
+				<goal id="g1221" />
+			</mission>
+		</scheme>
 	</functional-specification>
 
 	<!-- NORMATIVE SPECIFICATION -->
 	<normative-specification>
 		<norm id="n1" type="obligation" role="captor" mission="m1" />
         <norm id="n2" type="obligation" role="leader" mission="m2" />
+        <norm id="n101" type="obligation" role="cheat" mission="m101" />
+        <norm id="n101" type="obligation" role="cheat_helper" mission="m102" />
 	</normative-specification>
 </organisational-specification>
