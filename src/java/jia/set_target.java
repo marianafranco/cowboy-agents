@@ -12,6 +12,11 @@ import java.util.logging.Level;
 import arch.WorldModel;
 import arch.CowboyArch;
 
+/**
+ * Set the location as target.
+ * 
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
+ */
 @SuppressWarnings("serial")
 public class set_target extends DefaultInternalAction {
     

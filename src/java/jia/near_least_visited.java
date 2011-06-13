@@ -17,9 +17,10 @@ import arch.CowboyArch;
  * Gets the near least visited location.
  * Its is based on the agent's model of the world.
  * 
- * @author jomi
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  *
  */
+@SuppressWarnings("serial")
 public class near_least_visited extends DefaultInternalAction {
     
     @Override

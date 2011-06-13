@@ -75,10 +75,24 @@
 
 // search cow
 +!search_cow(near_unvisited)
-   :  pos(X,Y,_) & 
+   :  pos(X,Y,_) & not cow(_,_,_) &
       jia.near_least_visited(X,Y,ToX,ToY)
    <- !pos(ToX,ToY);
       !!search_cow(near_unvisited).
 
-+!search_cow(near_unvisited) : true
++!search_cow(near_unvisited) : not pos(_,_,_)
    <- !!search_cow(near_unvisited).
+
++!search_cow(near_unvisited)[scheme(Sch)]
+	: cow(CowX,CowY,CowId) & .my_name(Me)
+	<- 
+	.print("Cow ",CowId," found!");
+	jmoise.set_goal_state(Sch,g1,satisfied); // cow found
+	if (Me == leader) {
+		jmoise.set_goal_state(Sch,g22,satisfied); // cow id received
+	} else {
+		jmoise.set_goal_state(Sch,g21,satisfied); // cow id sent
+	}.
+	
+-!search_cow(near_unvisited)[error_msg(M),code(C),code_line(L)]
+	<- .print("Error on search_cow, command: ",C,", line ",L,", message: ",M).

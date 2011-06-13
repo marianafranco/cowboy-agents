@@ -105,6 +105,7 @@ public class CowboyArch extends OrgAgent {
 		int corraly0 = Integer.parseInt( p.getTerm(5).toString());
 		int corraly1 = Integer.parseInt( p.getTerm(6).toString());
 		model.setCorral(corralx0, corralx1, corraly0, corraly1);
+		// add believe "sim_start(simId)"
 		getTS().getAg().addBel(Literal.parseLiteral("sim_start(" + simId + ")"));
     }
 
@@ -112,8 +113,9 @@ public class CowboyArch extends OrgAgent {
      * Perceived "cell(x,y,content,contentAttr)".
      * @param p
      * 			the cell perceived.
+     * @throws RevisionFailedException 
      */
-    private void cellPerceived(Literal p) {
+    private void cellPerceived(Literal p) throws RevisionFailedException {
     	// absolute positions
     	int x =  Integer.parseInt(p.getTerm(0).toString().replace("(", "").replace(")", ""));
     	int y =  Integer.parseInt(p.getTerm(1).toString().replace("(", "").replace(")", ""));
@@ -150,6 +152,9 @@ public class CowboyArch extends OrgAgent {
     	} else if (content.equals("cow")) {
     		if (! model.hasObject(WorldModel.COW, x, y)) {
                 model.add(WorldModel.COW, x, y);
+                // add believe "cow(x,y,cowId)"
+                getTS().getAg().addBel(
+                		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
     		}
     		Message m = new Message("tell", null, null, p);
     		try {
@@ -211,6 +216,19 @@ public class CowboyArch extends OrgAgent {
 				e.printStackTrace();
 			}
     	}
+    }
+
+    /** update the model with obstacle and share them with the team mates */
+    public void obstaclePerceived(int x, int y, Literal p) {
+        if (! model.hasObject(WorldModel.OBSTACLE, x, y)) {
+            model.add(WorldModel.OBSTACLE, x, y);
+            Message m = new Message("tell", null, null, p);
+            try {
+                broadcast(m);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }       
     }
 
     /**

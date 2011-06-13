@@ -22,7 +22,7 @@ last_dir(null). // the last movement
       !next_step(X,Y).
 
 
-/* pos is used when it is algways possible to go */
+/* pos is used when it is always possible to go */
 +!pos(X,Y) 
   :  .desire(spos(OX,OY))
   <- .current_intention(I);

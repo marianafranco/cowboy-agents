@@ -51,9 +51,13 @@ public class WorldModel extends GridWorldModel {
 
 	@Override 
     public boolean isFree(int x, int y) {
-        return super.isFree(x,y) && !hasObject(COW, x, y) && !hasObject(ENEMY, x, y)
-        	&& !hasObject(CORRAL, x, y) && !hasObject(ENEMY_CORRAL, x, y);
+        return super.isFree(x,y) && !hasObject(COW, x, y) && !hasObject(ENEMY, x, y);
     }
+
+	@Override 
+    public boolean isFree(Location l) {
+		return isFree(l.x, l.y);
+	}
 
 	public void incVisited(Location l) {
     	incVisited(l.x,l.y);

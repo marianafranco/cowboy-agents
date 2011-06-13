@@ -11,6 +11,11 @@ import jason.asSyntax.NumberTerm;
 import jason.asSyntax.Term;
 import arch.CowboyArch;
 
+/**
+ * Returns true if there is a obstacle on the given location.
+ * 
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
+ */
 @SuppressWarnings("serial")
 public class obstacle extends DefaultInternalAction {
     

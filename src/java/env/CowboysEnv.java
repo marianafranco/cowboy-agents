@@ -308,6 +308,7 @@ public class CowboysEnv extends Environment {
      */
     private void updateRequestActionPercept(String agName, String msgReceived)
     		throws ParserConfigurationException, SAXException, IOException{
+    	clearPercepts(agName);
     	HashMap<String, String> perceptionValues = Messages.parseRequestActionPerception(msgReceived);
     	String id = perceptionValues.get("id");
     	String posx = perceptionValues.get("posx");

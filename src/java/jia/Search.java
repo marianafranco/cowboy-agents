@@ -15,21 +15,29 @@ import busca.Estado;
 import busca.Heuristica;
 import busca.Nodo;
 
+/**
+ * Search a path to a target location and gives the direction
+ * (north, south, west, south, ..).
+ * 
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
+ */
 public class Search {
-    
-    final WorldModel model;
+
+    final WorldModel 	  model;
     final Location        from, to;
     int[]                 actionsOrder;    
     int                   nbStates = 0;
-    
+    boolean         	  considerFenceAsObstacles;
+
     static final int[] defaultActions = { 1, 2, 3, 4, 5, 6, 7, 8 }; // initial order of actions
 
     Logger logger = Logger.getLogger(Search.class.getName());
-    
-    Search(WorldModel m, Location from, Location to, int[] actions, boolean considerAgentsAsObstacles) {
+
+    Search(WorldModel m, Location from, Location to, int[] actions, boolean considerFenceAsObstacles) {
         this.model = m;
         this.from  = from;
         this.to    = to;
+        this.considerFenceAsObstacles = considerFenceAsObstacles;
         if (actions != null) {
             this.actionsOrder = actions;
         } else {
@@ -41,15 +49,14 @@ public class Search {
     Search(WorldModel m, Location from, Location to) {
         this(m,from,to,null,false);
     }
-    
+
     public Nodo search() throws Exception { 
         Busca searchAlg = new AEstrela();
-        //searchAlg.ssetMaxAbertos(1000);
         GridState root = new GridState(from, "initial", this);
         root.setIsRoot();
         return searchAlg.busca(root);
     }
-    
+
     public String firstAction(Nodo solution) {
         Nodo root = solution;
         Estado prev1 = null;
@@ -64,38 +71,6 @@ public class Search {
         }
         return null;
     }
-
-    // test
-    /*
-    public static  void main(String[] a) throws Exception {
-        System.out.println("init");
-        Location pos = new Location(2,2);
-        
-        Search ia = new Search(WorldFactory.world9(), pos, new Location(40,40));
-
-        List<GridState> options = new ArrayList<GridState>(4);
-        options.add(new GridState(new Location(pos.x,pos.y+1),"down", ia));
-        options.add(new GridState(new Location(pos.x-1,pos.y), "left", ia));
-        options.add(new GridState(new Location(pos.x,pos.y-1),"up", ia));
-        options.add(new GridState(new Location(pos.x+1,pos.y),"right", ia));
-        //ia.model.incVisited(options.get(0).pos);
-        ia.model.incVisited(options.get(3).pos);
-        ia.model.incVisited(options.get(2).pos);
-        ia.model.incVisited(options.get(2).pos);
-        ia.model.incVisited(options.get(1).pos);
-        ia.model.incVisited(options.get(1).pos);
-        System.out.println(options);
-        for (GridState l: options) {
-            System.out.println(l+"="+ia.model.getVisited(l.pos));
-        }
-        Collections.sort(options, new VisitedComparator(ia.model));
-        System.out.println(options);
-
-        Nodo solution = ia.search();
-        System.out.println("action = "+ia.firstAction(solution) + ", path size = "+ solution.getProfundidade());
-        //System.out.println(solution.montaCaminho());
-    }
-    */
 }
 
 
@@ -107,7 +82,7 @@ final class GridState implements Estado, Heuristica {
     final Search        ia;
     final int           hashCode;
     boolean             isRoot = false;
-    
+
     public GridState(Location l, String op, Search ia) {
         this.pos = l;
         this.op  = op;
@@ -116,11 +91,11 @@ final class GridState implements Estado, Heuristica {
         
         ia.nbStates++;
     }
-    
+
     public void setIsRoot() {
         isRoot = true;
     }
-    
+
     public int custo() {
         return 1;
     }
@@ -136,15 +111,15 @@ final class GridState implements Estado, Heuristica {
     public int h() {
         return pos.distance(ia.to);
     }
-    
+
     public List<Estado> sucessores() {
         List<Estado> s = new ArrayList<Estado>(4);
         if (ia.nbStates > 50000) {
             ia.logger.info("*** It seems I am in a loop!");
             return s; 
         }
-                
-        // four directions
+
+        // 8 directions
         for (int a = 0; a < 8; a++) {
             switch (ia.actionsOrder[a]) {
             case 1: suc(s,new Location(pos.x-1,pos.y),"west"); break;
@@ -157,21 +132,23 @@ final class GridState implements Estado, Heuristica {
             case 8: suc(s,new Location(pos.x-1,pos.y+1),"southwest"); break;
             }
         }
-        
+
         // if it is root state, sort the option by least visited
         if (isRoot) {
             Collections.sort(s, new VisitedComparator(ia.model));
         }
         return s;
     }
-    
-    private void suc(List<Estado> s, Location newl, String op) {
 
+    private void suc(List<Estado> s, Location newl, String op) {
         if (ia.model.isFree(newl)) {
+        	if (ia.considerFenceAsObstacles && ia.model.hasObject(WorldModel.CLOSED_FENCE, newl.x, newl.y)) {
+        		return;
+        	}
         	s.add(new GridState(newl,op,ia));
         }
     }
-    
+
     public boolean equals(Object o) {
         if (o != null && o instanceof GridState) {
             GridState m = (GridState)o;
@@ -179,11 +156,11 @@ final class GridState implements Estado, Heuristica {
         }
         return false;
     }
-    
+
     public int hashCode() {
         return hashCode;
     }
-            
+
     public String toString() {
         return "(" + pos + "-" + op + ")"; 
     }
@@ -195,7 +172,7 @@ class VisitedComparator implements Comparator<Estado> {
     VisitedComparator(WorldModel m) {
         model = m;
     }
-    
+
     public int compare(Estado o1, Estado o2) {
         int v1 = model.getVisited(((GridState)o1).pos);
         int v2 = model.getVisited(((GridState)o2).pos);
@@ -203,5 +180,4 @@ class VisitedComparator implements Comparator<Estado> {
         if (v2 > v1) return -1;
         return 0;
     }
-
 }
