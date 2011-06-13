@@ -313,6 +313,9 @@ public class CowboyArch extends OrgAgent {
                     } else if (content.equals("cow")) {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.COW, x, y)) {
                             model.add(WorldModel.COW, x, y);
+                            // add believe "cow(x,y,cowId)"
+                            getTS().getAg().addBel(
+                            		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
                         }
                         im.remove();
                     // enemy

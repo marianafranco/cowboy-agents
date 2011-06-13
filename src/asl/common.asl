@@ -83,8 +83,8 @@
 +!search_cow(near_unvisited) : not pos(_,_,_)
    <- !!search_cow(near_unvisited).
 
-+!search_cow(near_unvisited)[scheme(Sch)]
-	: cow(CowX,CowY,CowId) & .my_name(Me)
++!search_cow(near_unvisited)
+	: cow(CowX,CowY,CowId) & .my_name(Me) & scheme_group(Sch,G)
 	<- 
 	.print("Cow ",CowId," found!");
 	jmoise.set_goal_state(Sch,g1,satisfied); // cow found
@@ -93,6 +93,6 @@
 	} else {
 		jmoise.set_goal_state(Sch,g21,satisfied); // cow id sent
 	}.
-	
+
 -!search_cow(near_unvisited)[error_msg(M),code(C),code_line(L)]
 	<- .print("Error on search_cow, command: ",C,", line ",L,", message: ",M).

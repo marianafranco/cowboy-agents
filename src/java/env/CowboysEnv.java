@@ -203,7 +203,7 @@ public class CowboysEnv extends Environment {
     	public void run() {
 	        while(true){
 	        	try {
-					Thread.sleep(1000); // wait 1 second
+					Thread.sleep(500); // wait 0.5 second
 					String msg = server.readMsg();
 					String type = Messages.parseMsg(msg);
 					updateAgPercept(agName, type, msg);

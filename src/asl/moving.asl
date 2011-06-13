@@ -32,7 +32,7 @@ last_dir(null). // the last movement
   <- jia.set_target(X,Y); 
      !spos(X,Y).
   
-+!spos(X,Y) : pos(X,Y,_). // <- .print("I've reached ",X,"x",Y).
++!spos(X,Y) : pos(X,Y,ActionId). // <- .print("I've reached ",X,"x",Y).
 +!spos(X,Y) : not jia.obstacle(X,Y) // the obstacle may be discovered after !pos(X,Y), so spos should fail.
   <- !next_step(X,Y);
      !spos(X,Y).
