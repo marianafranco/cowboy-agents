@@ -1,148 +1,243 @@
 package arch;
+
 import jason.environment.grid.Area;
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
+import java.util.logging.Logger;
+
+
 /**
- * Class used to model the scenario.
+ * Class used to model the scenario
  * 
- * @author Mariana Ramos Franco
+ * @author Jomi
  */
 public class WorldModel extends GridWorldModel {
 
-	// an agent is 0000010 and an obstacle is 000100 (defined on the GridWorldModel)
-	public static final int COW = 16;
-	public static final int ENEMY  = 32;
-    public static final int CORRAL = 64;
-    public static final int TARGET = 128; // one agent target location
-    public static final int ENEMY_CORRAL = 256;
-    public static final int OPEN_FENCE = 512;
-    public static final int CLOSED_FENCE = 1024;
-    public static final int SWITCH = 2048;
+    public static final int   COW    = 16;
+    public static final int   CORRAL = 32;
+    public static final int   ENEMY  = 64;
+    public static final int   TARGET = 128; // one agent target location
+    public static final int   FORPLACE = 256; // a place in a formation
+    public static final int   ENEMYCORRAL = 512;
+    public static final int   SWITCH = 1024;
+    public static final int   OPEN_FENCE = 2048;
+    public static final int   CLOSED_FENCE = 4096;
+    public static final int   FENCE = OPEN_FENCE + CLOSED_FENCE;
 
-    Area corral;
+    public static final int   nbActions = 8;
 
-    int[][] visited; // count the visited locations
-    int minVisited = 0; // min value for near least visited
+    public static final int   agsByTeam = 10;
+    
+    public int   			  agPerceptionRatio  = 8;
+    public static final int   cowPerceptionRatio = 4;    
 
-	public WorldModel(int w, int h, int nbAgs) {
-		super(w, h, nbAgs);
-		visited = new int[getWidth()][getHeight()];
-        for (int i = 0; i < getWidth(); i++) {
-            for (int j = 0; j < getHeight(); j++) {
-                visited[i][j] = 0;
-            }
-        }
-	}
+    
+    double                    PSim = 0.1; // probability of action/information failure
+    double                    PMax = 0.5; // maximal value for action/information failure
+    
+    Area                      corral;
 
-	public void setCorral(int corralx0, int corralx1, int corraly0, int corraly1) {
-		Location topLeft = new Location(corralx0, corraly0);
-		Location bottomRight = new Location(corralx1, corraly1);
-	    for (int y = topLeft.y; y <= bottomRight.y; y++)
-            for (int x = topLeft.x; x <= bottomRight.x; x++) {
-                add(CORRAL, x, y);
-            }
-	    corral = new Area(topLeft, bottomRight);
+    int                       cowsBlue = 0; // #cows the blue team puts in the corral
+    int                       cowsRed  = 0; // #cows the red team puts in the corral
+    int 					  initialNbCows = 0;
+    
+    int	                      maxSteps = 0; // number of steps of the simulation
+    String                    opponent;
+    
+    private Logger            logger   = Logger.getLogger("jasonTeamSimLocal.mas2j." + WorldModel.class.getName());
+
+    public enum Move {
+        north, south, east, west, northeast, southeast, northwest, southwest, skip 
+    };
+
+    public static WorldModel create(int w, int h, int nbAg) {
+    	return new WorldModel(w,h,nbAg);
+    }
+    
+    public WorldModel(int w, int h, int nbAg) {
+        super(w, h, nbAg);
     }
 
-	public Area getCorral() {
+    public int getAgsByTeam() {
+    	return agsByTeam;
+    }
+    
+    private static final int OBS_FOR_NOT_FREE = ENEMY + AGENT + COW + CORRAL + ENEMYCORRAL;
+    @Override 
+    public boolean isFree(int x, int y) {
+        return super.isFree(x,y) && !hasObject(OBS_FOR_NOT_FREE, x, y); //!hasObject(ENEMY, x, y) && !hasObject(AGENT, x, y) && !hasObject(COW, x, y) && !hasObject(CORRAL, x, y) && !hasObject(ENEMYCORRAL, x, y);
+    }
+
+    public int getData(Location l) {
+        return data[l.x][l.y];
+    }
+    
+    // upper 
+    public void setCorral(Location upperLeft, Location downRight) {
+	    for (int l=upperLeft.y; l<=downRight.y; l++)
+            for (int c=upperLeft.x; c<=downRight.x; c++) {
+                data[c][l] = CORRAL; // + OBSTACLE; obstacle can not be included in corral, some algs compute distance to corral
+            }
+	    corral = new Area(upperLeft, downRight);
+    }
+    
+    public void setCorral(int corralx0, int corralx1, int corraly0, int corraly1) {
+		Location topLeft = new Location(corralx0, corraly0);
+		Location bottomRight = new Location(corralx1, corraly1);
+		setCorral(topLeft, bottomRight);
+    }
+    
+    public Area getCorral() {
         return corral;
     }
 
-	@Override 
-    public boolean isFree(int x, int y) {
-        return super.isFree(x,y) && !hasObject(COW, x, y) && !hasObject(ENEMY, x, y);
+    public int getCowsBlue() {
+    	return cowsBlue;
     }
 
-	@Override 
-    public boolean isFree(Location l) {
-		return isFree(l.x, l.y);
-	}
-
-	public void incVisited(Location l) {
-    	incVisited(l.x,l.y);
+    public int getCowsRed() {
+    	return cowsRed;
     }
-
-    public void incVisited(int x, int y) {
-    	visited[x][y] += 2;
-        for (int r = 1; r <= 8; r++) {
-            for (int c = x - r; c <= x + r; c++){
-            	for (int l = y - r; l <= y + r; l++) {
-            		if (inGrid(c,l)) {
-                    	visited[c][l] += 1;
-                    }
-            	}
+    
+    public void setCowsBlue(int c) {
+        cowsBlue = c;
+    }
+    public void setCowsRed(int c) {
+        cowsRed = c;
+    }
+    
+    public void setOpponent(String o) {
+        opponent = o;
+    }
+    public String getOpponent() {
+        return opponent;
+    }
+    public void setPSim(double psim) {
+        PSim = psim;
+    }
+    public void setPMax(double pmax) {
+        PMax = pmax;
+    }
+    
+    public void setMaxSteps(int s) {
+    	maxSteps = s;
+    }
+    public int getMaxSteps() {
+    	return maxSteps;
+    }
+    public void setAgPerceptionRatio(int ratio) {
+    	agPerceptionRatio=ratio;
+    }
+    public int getAgPerceptionRatio() {
+    	return agPerceptionRatio;
+    }
+        
+    public void removeAll(int obj) {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+            	if (hasObject(obj, i, j))
+            		remove(obj, i, j);
             }
-    	}
-    }
-
-    public int getVisited(Location l) {
-        return visited[l.x][l.y];
-    }
-
-    /** returns the near location of x,y that was least visited */
-    public Location getNearLeastVisited(int agx, int agy) {
-        Location agloc = new Location(agx,agy);        
-        while (true) {
-            int x = agx;
-            int y = agy;
-            int w = 1; 
-            int dx = 0;
-            int dy = 0;
-            int stage = 1;
-            Location better = null;
-            
-            while (w < getWidth()) {
-                switch (stage) {
-                    case 1: if (dx < w) {
-                                dx++;
-                                break;
-                            } else {
-                                stage = 2; 
-                            }
-                    case 2: if (dy < w) {
-                                dy++;
-                                break;
-                            } else {
-                                stage = 3;
-                            }
-                    case 3: if (dx > 0) {
-                                dx--;
-                                break;
-                            } else {
-                                stage = 4;
-                            }
-                    case 4: if (dy > 0) {
-                                dy--;
-                                break;
-                            } else {
-                                stage = 1;
-                                x--;
-                                y--;
-                                w += 2;
-                            }
-                }
-                
-                Location l = new Location(x+dx,y+dy);
-                if (isFree(l) && !l.equals(agloc)) {
-                    if (visited[l.x][l.y] < minVisited) { // a place better then minVisited! go there
-                        return l;
-                    } if (visited[l.x][l.y] == minVisited) { // a place in the minVisited level
-                        if (better == null) {
-                            better = l;
-                        } else if (l.distance(agloc) < better.distance(agloc)) {
-                            better = l;
-                        } else if (l.distance(agloc) == better.distance(agloc) && random.nextBoolean()) { // to chose ramdomly equal options
-                            better = l;
-                        }
-                    }
-                }
-            } // end while
-
-            if (better != null) {
-                return better;
-            }
-            minVisited++;
         }
     }
+    
+    /** Actions **/
+
+    synchronized public boolean move(Move dir, int ag) throws Exception {
+        if (ag < 0) {
+            logger.warning("** Trying to move unknown agent!");
+            return false;
+        }
+        Location l = getAgPos(ag);
+        if (l == null) {
+            logger.warning("** We lost the location of agent " + (ag + 1) + "!"+this);
+            return false;
+        }
+        Location n = null;
+        switch (dir) {
+        case north:  n =  new Location(l.x, l.y - 1); break;
+        case south:  n =  new Location(l.x, l.y + 1); break;
+        case east:   n =  new Location(l.x + 1, l.y); break;
+        case west:   n =  new Location(l.x - 1, l.y); break;
+        }
+        if (n != null && canMoveTo(ag, n)) {
+            // if there is an agent there, move that agent
+            if (!hasObject(AGENT, n) || move(dir,getAgAtPos(n))) {
+                setAgPos(ag, n);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean canMoveTo(int ag, Location l) {
+        return isFreeOfObstacle(l);
+    }
+    
+    public void wall(int x1, int y1, int x2, int y2) {
+    	for (int i=x1; i<=x2; i++) {
+    		for (int j=y1; j<=y2; j++) {
+    			add(OBSTACLE, i, j);;
+    		}
+    	}
+    }
+    
+    public String toString() {
+    	StringBuilder s = new StringBuilder("|");
+
+    	for (int i = 0; i < getWidth(); i++) {
+    	    s.append('-');
+    	}
+    	s.append("|\n");
+    	String bar = s.toString();
+    	for (int j = 0; j < getHeight(); j++) {
+    	    s.append('|');
+    		for (int i = 0; i < getWidth(); i++) {
+            	if (hasObject(OBSTACLE, i, j)) {
+            		s.append('X');
+            	} else if (hasObject(AGENT, i, j)) {
+            		s.append(String.valueOf(getAgAtPos(i,j)));
+            	} else if (hasObject(COW, i, j)) {
+            		s.append('c');
+            	} else if (hasObject(ENEMY, i, j)) {
+            		s.append('E');
+                } else if (hasObject(OPEN_FENCE, i, j)) {
+                    s.append('f');
+                } else if (hasObject(CLOSED_FENCE, i, j)) {
+                    s.append('F');
+                } else if (hasObject(SWITCH, i, j)) {
+                    s.append('s');
+            	} else {
+            		s.append(' ');
+            	}
+            }
+            s.append("|\n");
+        }
+    	s.append(bar);
+    	
+    	return s.toString();
+    }
+
+    public static Location getNewLocationForAction(Location pos, WorldModel.Move action) {
+        switch (action) {
+        case west     : return new Location(pos.x-1,pos.y);
+        case east     : return new Location(pos.x+1,pos.y);
+        case north    : return new Location(pos.x,pos.y-1);
+        case northeast: return new Location(pos.x+1,pos.y-1);
+        case northwest: return new Location(pos.x-1,pos.y-1);
+        case south    : return new Location(pos.x,pos.y+1);
+        case southeast: return new Location(pos.x+1,pos.y+1);
+        case southwest: return new Location(pos.x-1,pos.y+1);
+        }
+        return null;
+    }
+    
+    public static int stringToObject(String o) {
+        if (o.equals("CLOSED_FENCE")) return CLOSED_FENCE;
+        else if (o.equals("OPEN_FENCE")) return OPEN_FENCE;
+        // TODO: implement others
+        return -1;
+    }
+
 }

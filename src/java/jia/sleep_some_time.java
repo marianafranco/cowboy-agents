@@ -23,7 +23,7 @@ import busca.Nodo;
  * 
  * Wait
  *  
- * @author jomi
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  */
 public class sleep_some_time extends DefaultInternalAction {
     

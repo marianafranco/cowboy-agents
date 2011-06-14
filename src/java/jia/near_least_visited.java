@@ -10,7 +10,7 @@ import jason.environment.grid.Location;
 
 import java.util.logging.Level;
 
-import arch.WorldModel;
+import arch.LocalWorldModel;
 import arch.CowboyArch;
 
 /**
@@ -26,7 +26,7 @@ public class near_least_visited extends DefaultInternalAction {
     @Override
     public Object execute(TransitionSystem ts, Unifier un, Term[] terms) throws Exception {
         try {
-            WorldModel model = ((CowboyArch)ts.getUserAgArch()).getModel();
+            LocalWorldModel model = ((CowboyArch)ts.getUserAgArch()).getModel();
             if (model == null) {
                 ts.getLogger().log(Level.SEVERE, "no model to get near_least_visited!");
             } else {

@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
  * - create the XML messages sent to the server.
  * - parse the XML messages received from the server.
  * 
- * @author Mariana Ramos Franco
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  */
 public class Messages {
 

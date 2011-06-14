@@ -9,39 +9,44 @@ import jason.environment.grid.Location;
 
 import java.util.logging.Level;
 
-import arch.WorldModel;
 import arch.CowboyArch;
+import arch.WorldModel;
 
-/**
- * Set the location as target.
- * 
- * @author Mariana Ramos Franco, Rafael Barbolo Lopes
- */
-@SuppressWarnings("serial")
+/** 
+  * Adds target
+  * jia.set_target(+X,+Y);
+  * 
+  **/
+
 public class set_target extends DefaultInternalAction {
     
-    Location oldTarget = null;
-    
+	Location oldTarget = null;
+	
     @Override
     public Object execute(TransitionSystem ts, Unifier un, Term[] terms) throws Exception {
-        try {
-            WorldModel model = ((CowboyArch)ts.getUserAgArch()).getModel();
-            if (model == null) {
-                ts.getLogger().log(Level.SEVERE, "no model to get near_least_visited!");
-            } else {
-                if (oldTarget != null && model.inGrid(oldTarget)) {
-                    model.remove(WorldModel.TARGET, oldTarget);
-                }
-                NumberTerm x = (NumberTerm)terms[0]; 
-                NumberTerm y = (NumberTerm)terms[1];
-                Location t = new Location((int)x.solve(), (int)y.solve());
-                if (model.inGrid(t)) {
-                    model.add(WorldModel.TARGET, t);
-                    oldTarget = t;
-                }
-            }
-            return true;
-        } catch (Throwable e) {
+    	try {
+    	    CowboyArch  arch = (CowboyArch)ts.getUserAgArch();
+	        WorldModel model = arch.getModel();
+	        if (model == null) {
+	            ts.getLogger().log(Level.SEVERE, "no model to get near_least_visited!");
+	        } else {
+	            if (oldTarget != null && model.inGrid(oldTarget)) {
+	            	model.remove(WorldModel.TARGET, oldTarget);
+	            	//if (arch.getACViewer() != null)
+	            	//    arch.getACViewer().getModel().remove(WorldModel.TARGET, oldTarget);
+	            }
+	            NumberTerm x = (NumberTerm)terms[0]; 
+	            NumberTerm y = (NumberTerm)terms[1];
+	            Location t = new Location((int)x.solve(), (int)y.solve());
+	            if (model.inGrid(t)) {
+		            model.add(WorldModel.TARGET, t);
+                    //if (arch.getACViewer() != null)
+                    //    arch.getACViewer().getModel().add(WorldModel.TARGET, t);
+		            oldTarget = t;
+	            }
+	        }
+	        return true;
+    	} catch (Throwable e) {
             ts.getLogger().log(Level.SEVERE, "jia.set_target error: "+e, e);
         }
         return false;        
