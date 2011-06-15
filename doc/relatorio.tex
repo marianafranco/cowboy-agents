@@ -527,6 +527,16 @@ A procura de uma vaca consiste em um agente \textit{cowboy} se movimentar pelo a
 
 Para impedir que o time adversário capture vacas, um cowboy \textit{sabotador} se move até a cerca do time adversário e a mantém sempre aberta. Desta forma, é improvável que uma vaca capturada da equipe adversária ficará presa dentro da cerca.
 
+% Inconsistências
+\subsection{Inconsistências entre projeto e implementação}
+
+Durante a implementação do projeto, foram realizados testes com o ambiente de simulação que revelaram algumas falhas na especificação do projeto. Essas falhas geraram pequenas inconsistências entre a especificação do projeto e a implementação final, que serão apresentadas a seguir.
+
+Uma falha identificada durante testes com o servidor de simulação foi a abertura e o fechamento das cercas. Não estava explicitado que a cerca ficava aberta apenas enquanto um \textit{cowboy} estivesse ao lado de seu botão. Desta forma, para que um \textit{cowboy} consiga passar pela cerca, é necessário que um outro \textit{cowboy} fique ao lado do botão de abertura e fechamento da cerca. Havia sido suposto que o botão da cerca era um interruptor e não um botão de pressão. Assim, foi necessário modificar a implementação do esquema de atrapalhar a equipe adversária para que dois \textit{cowboys}, ao invés de apenas um, caminhem até a cerca do inimigo e a mantenham sempre aberta.
+
+% TODO: Inconsistencies about herding cows
+
+
 % ### CARACTERÍSTICAS TÉCNICAS ###
 \section{Características técnicas}
 
