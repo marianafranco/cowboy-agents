@@ -1,5 +1,8 @@
 package arch;
 
+import static jason.asSyntax.ASSyntax.createLiteral;
+import static jason.asSyntax.ASSyntax.createNumber;
+
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,25 +11,48 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import env.cow.ClusterModelFactory;
+import env.cow.CowModelFactory;
+import env.cow.IClusterModel;
+import env.cow.ICowModel;
+
 import jason.JasonException;
 import jason.RevisionFailedException;
 import jason.asSemantics.Message;
+import jason.asSyntax.Atom;
 import jason.asSyntax.Literal;
 import jason.asSyntax.NumberTerm;
+import jason.asSyntax.Term;
 import jason.environment.grid.Location;
 import jason.mas2j.ClassParameters;
 import jason.runtime.Settings;
 import jmoise.OrgAgent;
 
-
+/**
+ * 
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
+ */
 public class CowboyArch extends OrgAgent {
-	private WorldModel model = null;
+	private LocalWorldModel model = null;
 	private String simId = null;
     private int myId  = -1;
     private String opponent = null;
     private int steps = -1;
     private int numOfCowboys = -1;
-    
+
+    ICowModel		cModel = null;
+	IClusterModel	clModel = null;
+
+	public static Atom aOBSTACLE    = new Atom("obstacle");
+	public static Atom aENEMY       = new Atom("enemy");
+	public static Atom aENEMYCORRAL = new Atom("enemycorral");
+	public static Atom aALLY        = new Atom("ally");
+	public static Atom aEMPTY       = new Atom("empty");
+	public static Atom aSWITCH      = new Atom("switch");
+    public static Atom aFENCE       = new Atom("fence");
+    public static Atom aOPEN        = new Atom("open");
+    public static Atom aCLOSED      = new Atom("closed");
+
     // sabotage
     private static List<Fence> fences = new ArrayList<Fence>();
     private static boolean cheat_passed = false, cheat_in_position = false, helper_in_position = false;
@@ -112,12 +138,17 @@ public class CowboyArch extends OrgAgent {
     	String gsizey = p.getTerm(8).toString();
     	int w = Integer.parseInt(gsizex);
     	int h = Integer.parseInt(gsizey);
-    	model = new WorldModel(w, h, 10);
+    	model = new LocalWorldModel(w, h,  WorldModel.agsByTeam, getTS().getAg().getBB());
     	int corralx0 = Integer.parseInt( p.getTerm(3).toString());
 		int corralx1 = Integer.parseInt( p.getTerm(4).toString());
 		int corraly0 = Integer.parseInt( p.getTerm(5).toString());
 		int corraly1 = Integer.parseInt( p.getTerm(6).toString());
 		model.setCorral(corralx0, corralx1, corraly0, corraly1);
+		
+		cModel = CowModelFactory.getModel(""+getMyId());
+        cModel.setSize(w,h);
+        clModel = ClusterModelFactory.getModel(""+getMyId());
+		
 		// add believe "sim_start(simId)"
 		getTS().getAg().addBel(Literal.parseLiteral("sim_start(" + simId + ")"));
     }
@@ -168,6 +199,8 @@ public class CowboyArch extends OrgAgent {
                 // add believe "cow(x,y,cowId)"
                 getTS().getAg().addBel(
                 		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
+                int cowId = Integer.parseInt(contentAttr);
+                cModel.insertCow(cowId,x,y);
     		}
     		Message m = new Message("tell", null, null, p);
     		try {
@@ -177,8 +210,8 @@ public class CowboyArch extends OrgAgent {
 			}
     	// update the model with the corral enemy location and share this with other agents
     	} else if (content.equals("corral") && contentAttr.equals("enemy")) {
-			if (! model.hasObject(WorldModel.ENEMY_CORRAL, x, y)) {
-                model.add(WorldModel.ENEMY_CORRAL, x, y);
+			if (! model.hasObject(WorldModel.ENEMYCORRAL, x, y)) {
+                model.add(WorldModel.ENEMYCORRAL, x, y);
     		}
     		Message m = new Message("tell", null, null, p);
     		try {
@@ -243,6 +276,12 @@ public class CowboyArch extends OrgAgent {
             }
         }       
     }
+
+    /** update the model with obstacle and share them with the team mates */
+	public void obstaclePerceived(int x, int y) {
+		Literal p = createCellPerception(x, y,aOBSTACLE);
+		obstaclePerceived(x, y, p);
+	}
 
     /**
      * Perceived "perception(id,posx,posy,score,step,deadline)".
@@ -354,8 +393,8 @@ public class CowboyArch extends OrgAgent {
                         im.remove();
                     // corral
                     } else if (content.equals("corral") && contentAttr.equals("enemy")) {
-                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.ENEMY_CORRAL, x, y)) {
-                            model.add(WorldModel.ENEMY_CORRAL, x, y);
+                    	if (model.inGrid(x,y) && !model.hasObject(WorldModel.ENEMYCORRAL, x, y)) {
+                            model.add(WorldModel.ENEMYCORRAL, x, y);
                         }
                         im.remove();
                     // switch
@@ -411,12 +450,20 @@ public class CowboyArch extends OrgAgent {
 	public static int getAgId(String agName) {
 		if (agName.equals("leader")) {
 			return 0;
+		} else if (agName.equals("cheat")) {
+			return 1;
+		} else if (agName.equals("cheat_helper")) {
+			return 2;
 		} else {
-			return (Integer.parseInt(agName.substring(agName.length()-1)));
+			return (Integer.parseInt(agName.substring(agName.length()-1)) + 2);
 		}
 	}
 
-	public WorldModel getModel() {
+	public static Literal createCellPerception(int x, int y, Term obj) {
+        return createLiteral("cell", createNumber(x), createNumber(y), obj); 
+    }
+
+	public LocalWorldModel getModel() {
         return model;
     }
 

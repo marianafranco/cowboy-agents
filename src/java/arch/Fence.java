@@ -1,5 +1,9 @@
 package arch;
 
+/**
+ * 
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
+ */
 public class Fence {
 	
 	private String access_from;

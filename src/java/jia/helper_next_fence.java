@@ -12,10 +12,8 @@ import jason.environment.grid.Location;
 import java.util.Random;
 import java.util.logging.Level;
 
-import env.CowboysEnv;
-
 import arch.Fence;
-import arch.WorldModel;
+import arch.LocalWorldModel;
 import arch.CowboyArch;
 import busca.Nodo;
 
@@ -23,7 +21,7 @@ import busca.Nodo;
  * 
  * Moves the agent to the enemy's fence
  *  
- * @author jomi
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  */
 public class helper_next_fence extends DefaultInternalAction {
 	
@@ -43,7 +41,7 @@ public class helper_next_fence extends DefaultInternalAction {
             if (agent.getFences().size() != 0) {
             	Fence next_fence = agent.getFences().get(0);
             	
-            	WorldModel model = agent.getModel();
+            	LocalWorldModel model = agent.getModel();
             	
             	// current position
             	int iagx = (int)((NumberTerm)terms[0]).solve();
@@ -113,11 +111,7 @@ public class helper_next_fence extends DefaultInternalAction {
                     actionsOrder[i2] = actionsOrder[i1];
                     actionsOrder[i1] = temp;
                     
-                    if (actionsOrder[0] + actionsOrder[1] + actionsOrder[2] + actionsOrder[3] != 10) {
-                        ts.getLogger().warning("****** lost action!!!!!");
-                    }
-                    
-                    Search astar    = new Search(model, from, to, actionsOrder, true);
+                    SearchOld astar    = new SearchOld(model, from, to, actionsOrder, true);
                     Nodo   solution = astar.search();
                     if (solution != null) {
                         String ac = astar.firstAction(solution);

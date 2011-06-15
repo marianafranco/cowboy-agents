@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 /**
  * Class with methods to connect to the server and communicate with it.
  * 
- * @author Mariana Ramos Franco
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  */
 public class ServerConnection {
 	private Socket sock;

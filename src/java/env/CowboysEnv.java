@@ -22,7 +22,7 @@ import jason.environment.Environment;
  * Defines possible actions to be performed by the agents. Also update the
  * agent percept with the informations received from the server.
  * 
- * @author Mariana Ramos Franco
+ * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  */
 public class CowboysEnv extends Environment {
 	
