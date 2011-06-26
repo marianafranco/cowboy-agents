@@ -1,7 +1,7 @@
 // Agent cowboy in project cowboy-agents
 
 /* Initial beliefs and rules */
-// I want to play "cowboy" in "sabotage"
+// I want to play "captor" in "capture"
 desired_role(capture,captor).
 
 // I want to commit to "m1" mission in "catchCows" schemes
@@ -12,16 +12,7 @@ desired_mission(catchCowScheme,m1).
 { include("moving.asl") }
 
 /* Initial goals */
-
 !connect_to_server.	// I want to connect to the server
-
-/* Organisational Events  */
-
-
-/* Structural events */
-
-
-/* Functional events */
 
 
 /* Plans */
@@ -29,19 +20,29 @@ desired_mission(catchCowScheme,m1).
 +sim_start(SimId): true
 	<- .print("Simulation started").
 
+
 // goal: herding cows
 { begin maintenance_goal("+pos(_,_,_)") }
 
-+!herding_cows : .intend(search_cow)
-	<-  .drop_desire(search_cow).
++!herding_cows
+	: .intend(search_cow) &
+	  pos(X,Y,ActionId) & target(TX,TY)
+	<-  .drop_desire(search_cow);
+		.drop_desire(move);
+		!move.
 
-+!herding_cows : pos(X,Y,_) & not target(TX,TY) &
-	jia.near_least_visited(X,Y,ToX,ToY)
-	<- 	.drop_desire(search_cow);
-		!pos(ToX,ToY).
++!herding_cows : pos(X,Y,ActionId) & not target(TX,TY) &
+	jia.near_least_visited(X,Y,ToX,ToY) & not .intend(search_cow)
+	<- 	!pos(ToX,ToY).
+
++!herding_cows : pos(X,Y,ActionId) & target(X,Y)
+	<- 	//.drop_desire(move);
+		//!move.
+		.drop_desire(move);
+		!move_to_corral.
 
 +!herding_cows : target(TX,TY)
-	<- 	.drop_desire(move);
+	<-	.drop_desire(move);
 		!move.
 
 +!herding_cows.

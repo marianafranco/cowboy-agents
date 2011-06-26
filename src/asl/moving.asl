@@ -1,8 +1,19 @@
 /* plans for moving */
 
 last_dir(null). // the last movement
-fence_obstacle(fences).
+fence_obstacle(fences). // determines if the fences is a obstacle
 
+/* not used
+random_pos(X,Y) :- 
+    pos(AgX,AgY,_) &
+    jia.random(RX,20) &
+    jia.random(RY,20) &
+    X = (RX-10)+AgX &
+    Y = (RY-10)+AgY &
+    not jia.obstacle(X,Y) &
+    not jia.fence(X,Y) &
+    not jia.corral(X,Y).
+*/
 
 +?pos(X, Y, ActionId)
   <- .wait({+pos(X,Y,ActionId)}).
@@ -30,15 +41,16 @@ fence_obstacle(fences).
   <- .current_intention(I);
      .print("** Trying to go to ",X,",",Y," while another !pos to ",OX,",",OY," is running by intention ",I);
       .fail.
+
 +!pos(X,Y)
   <- jia.set_target(X,Y); 
      !spos(X,Y).
-     
-  
+
 +!spos(X,Y) : pos(X,Y,ActionId). // <- .print("I've reached ",X,"x",Y).
 +!spos(X,Y) : not jia.obstacle(X,Y) // the obstacle may be discovered after !pos(X,Y), so spos should fail.
-  <- !next_step(X,Y).
-
+  	<- !next_step(X,Y).
+//+!spos(X,Y) : random_pos(RX,RY)
+//	<- !next_step(RX,RY).
 
 
 
@@ -53,7 +65,8 @@ fence_obstacle(fences).
      .drop_desire(move);
      !move.
 
-+target(X,Y) : pos(X,Y,ActionId). // <- .print("I've reached ",X,"x",Y).
++target(X,Y) : pos(X,Y,ActionId)  // <- .print("I've reached ",X,"x",Y).
+	<- !move_to_corral.
 
 +!move : target(X,Y) & jia.obstacle(X,Y) & // the target is an obstacle!
 	pos(AgX,AgY,ActionId)
@@ -79,9 +92,24 @@ fence_obstacle(fences).
      .println("failure in moving; intention was: ",I);
      !move.
 
+
++!move_to_corral
+	: pos(X,Y,_) &
+	  corral_center(CX,CY) &
+	  jia.has_object_in_path(X, Y, CX, CY, closed_fence, FX, FY, Dist) //&
+	  //jia.fence_switch(FX, FY, SX, SY) &
+	  //jia.is_corral_switch(SX,SY)
+	<-  jia.other_side_fence(FX,FY,TX,TY);
+		.print("old target: ", X, ",", Y, " - new target: ", TX, ",", TY);
+		-+target(TX,TY).
+
++!move_to_corral <- .print("do nothing").
+
+
 // set fence as obstacle for N cycles
 +!fence_as_obstacle(N) : N <= 0
-  <- -+fence_obstacle(no).
+	<-  -fence_obstacle(fences);
+		-+fence_obstacle(no).
    
 +!fence_as_obstacle(N) : N > 0
   <- -+fence_obstacle(fences);

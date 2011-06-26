@@ -1,7 +1,11 @@
 /*
-    Jason Project
-
-    -- created on Maio 09, 2011
+ *  Jason Project
+ *	
+ *	Jason Team for the
+ *  Multi-Agent Programming Contest 2009
+ * (http://www.multiagentcontest.org)
+ *
+ *  -- created on Maio 09, 2011
 */
 
 MAS cowboy_agents {

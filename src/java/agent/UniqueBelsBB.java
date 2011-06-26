@@ -24,7 +24,7 @@ import java.util.Map;
  * two students with the same key. Or, two students in the BB will have two different keys.
  * The belief "depot/3" has no key, so there will be always only one "depot" in the BB.
  * 
- * @author jomi
+ * @author Jomi
  */
 public class UniqueBelsBB extends DefaultBeliefBase {
     //static private Logger logger = Logger.getLogger(UniqueBelsBB.class.getName());

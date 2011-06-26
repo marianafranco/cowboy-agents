@@ -24,12 +24,12 @@ import arch.WorldModel;
  * Where: (Xo,Yo) is the origin and (Xd, Yd) is the destiny. D is the direction deserved.
  * @author jomi
  */
-public class direction extends DefaultInternalAction {
+public class direction_cow_not_obstacle extends DefaultInternalAction {
 
     WorldModel.Move[] actionsOrder = new WorldModel.Move[WorldModel.nbActions];
     Random     random = new Random();
 
-    public direction() {
+    public direction_cow_not_obstacle() {
         for (int i=0; i<WorldModel.nbActions; i++) {
             actionsOrder[i] = Search.defaultActions[i];
         }
@@ -84,7 +84,7 @@ public class direction extends DefaultInternalAction {
 
             boolean fencesAsObs = terms.length > 5  && terms[5].toString().equals("fences");
             // if an agent is inside the corral, corral must be a path, no do not consider corra as obstacle here
-            Search astar    = new Search(model, from, to, actionsOrder, true, false, true, false, false, fencesAsObs, arch);
+            Search astar    = new Search(model, from, to, actionsOrder, true, false, false, false, false, fencesAsObs, arch);
             solution = astar.search();
 
             if (solution == null && !fencesAsObs) {

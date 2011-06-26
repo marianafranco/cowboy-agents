@@ -72,6 +72,11 @@
 -!authenticate_to_server[error_msg(M),code(C),code_line(L)]
    <- .print("Error authenticating to the server, command: ",C,", line ",L,", message: ",M).
 
+// corral location perception
++corral(UpperLeftX,UpperLeftY,DownRightX,DownRightY)
+  <- -+corral_center((UpperLeftX + DownRightX)/2, (UpperLeftY + DownRightY)/2).
+
+
 
 // goal: search cow
 { begin maintenance_goal("+pos(_,_,_)") }
@@ -86,9 +91,12 @@
    	<-  .wait({+pos(_,_,_)}).
 
 +!search_cow
-	: jia.found_cow & scheme_group(Sch,G)
+	: jia.found_cow & scheme_group(Sch,G) &
+	  pos(X,Y,ActionId) & not target(TX,TY)
 	<-  .print("Cow found!");
-		jmoise.set_goal_state(Sch,search_cow,satisfied). // cow found
+		jmoise.set_goal_state(Sch,search_cow,satisfied); // cow found
+		jia.near_least_visited(X,Y,ToX,ToY);
+		!pos(ToX,ToY).
 
 +!search_cow : target(TX,TY)
 	<- 	.drop_desire(pos(ToX,ToY)).

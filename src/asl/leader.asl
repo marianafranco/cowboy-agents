@@ -12,7 +12,6 @@ desired_mission(catchCowScheme,m2).
 { include("moving.asl") }
 
 /* Initial goals */
-
 !create_group. // initial goal
 !connect_to_server.	// I want to connect to the server
 
@@ -27,11 +26,6 @@ desired_mission(catchCowScheme,m2).
 -!create_group[error_msg(M),code(C),code_line(L)]
    <- .print("Error creating group, command: ",C,", line ",L,", message: ",M).
 
-
-/* Organisational Events  */
-
-/* Structural events */	
-
 /* Functional events */
 // when a scheme has finished, start another
 /*
@@ -41,7 +35,10 @@ desired_mission(catchCowScheme,m2).
 	.print("Scheme ",SchId," created").
 */
 
+
+
 /* Plans */
+
 // when authenticated and playing role "leader",
 // create a catchCow scheme 
 +auth(ok): play(Me,leader,GId) & .my_name(Me)
@@ -64,31 +61,30 @@ desired_mission(catchCowScheme,m2).
 	.count(play(_,captor,G),NAg) &
 	jia.position_to_cluster(ClX,ClY,NAg,Formation)
   	<-	.findall(P, play(P,captor,G), Agents);
-  	   	.print("Formation is: ",Formation," and Agents are: ",Agents);
-  	   	!send_target(Agents,Formation).
+  	   	//.print("Formation : ",Formation);
+  	   	//.print("Agents : ",Agents);
+  	   	.print("New formation!!");
+  	   	!send_target(Agents,Formation);
+  	   	!go_open_fence.
 
-/* mudar para ir para a cerca
-+!coordinate_cowboys : pos(X,Y,_) & jia.near_least_visited(X,Y,ToX,ToY) &
-	not .intend(pos(_,_)) 
-   	<-  !pos(ToX,ToY).
-*/
-
-+!coordinate_cowboys.
++!coordinate_cowboys 
+   	<-  !go_open_fence.
 
 -!coordinate_cowboys[error_msg(M),code(C),code_line(L)]
 	<- .print("Error on coordinate_cowboys, command: ",C,", line ",L,", message: ",M).
 
 { end }
 
+// send a new target(X,Y) to the agents
 +!send_target(Agents,[pos(X,Y)|TLoc])
  	<- !find_closest(Agents,pos(X,Y),NearAg);
  	   .send(NearAg,tell,target(X,Y));
  	   .delete(NearAg,Agents,TAg);
  	   !send_target(TAg,TLoc).
-
 +!send_target([],[]).
  
-+!find_closest(Agents, pos(FX,FY), NearAg) // find the agent near to pos(X,Y)
+ // find the agent near to pos(FX,FY)
++!find_closest(Agents, pos(FX,FY), NearAg)
  	<- .my_name(Me);
  	   .findall(d(D,Ag),
            .member(Ag,Agents) & ally_pos(Ag,AgX,AgY) & jia.path_length(FX,FY,AgX,AgY,D),
@@ -97,8 +93,73 @@ desired_mission(catchCowScheme,m2).
 -!find_closest[error_msg(M),code(C),code_line(L)]
 	<- .print("Error on find_closest, command: ",C,", line ",L,", message: ",M).
 
-// goal: open fence
-{ begin maintenance_goal("+pos(_,_,_)") }
+
+// open fence
 +!go_open_fence
-	<-  .print("go open fence").
-{ end }
+	: switch(SX,SY) & jia.is_corral_switch(SX,SY) &
+	  pos(X,Y,ActionId) &
+	  not .intend(pos(_,_)) &
+	  not has_no_fence
+	<-  !fence_as_obstacle(0);
+		jia.switch_places(SX,SY,X,Y,PX,PY,_,_);
+		if ( not (X == PX & Y == PY)) {
+			.print("go open fence");
+			jia.direction_cow_not_obstacle(X, Y, PX, PY, D);
+			.print("[action: ",ActionId,"] from ",X,"x",Y," to ", PX,"x",PY," -> ",D);
+			-+last_dir(D);
+			do(D,ActionId)
+		}.
+
++!go_open_fence
+	: corral_center(CX,CY) &
+	  not (switch(X,Y) & jia.is_corral_switch(X,Y)) &
+	  not has_no_fence
+	<-  !fence_as_obstacle(0);
+		.print("go to corral");
+		!pos(CX,CY).
+
++!go_open_fence
+	: not switch(SX,SY) & corral_center(CX,CY) &
+	  not has_no_fence
+	<- 	!fence_as_obstacle(0);
+		.print("no swith, go to corral");
+		!pos(CX,CY).
+
++!go_open_fence
+	: pos(X,Y,ActionId) & corral_center(CX,CY) &
+	  jia.dist(X,Y,CX,CY, Dist) &
+	  Dist < 3
+	<-  -+has_no_fence.
+
++!go_open_fence
+	: has_not_fence & pos(X,Y,ActionId) &
+	  corral(XO,YO,XI,YI)
+	<-  !pos(XO,YO).
+
++!go_open_fence
+	: has_not_fence & pos(X,Y,ActionId) &
+	  corral(X,Y,XI,YI).
+
++!go_open_fence : not pos(_,_,_)
+   	<-  .wait({+pos(_,_,_)}).
+
+
+// end of simulation
+@fimdesimulacao[atomic]
++end_of_simulation(_Result)
+  <- -end_of_simulation(_);
+     .drop_all_desires;
+     !remove_org.
+
+// remove all groups and schemes (only leader does that)
++!remove_org
+   : .my_name(leader)
+  <- .print("Removing all groups and schemes");
+     if(group(team,Old)) {
+        jmoise.remove_group(Old)
+     };
+     for( scheme(_,SchId) ) {
+        jmoise.remove_scheme(SchId)
+     }.
+
++!remove_org.

@@ -33,7 +33,7 @@ import busca.Nodo;
 /**
  * Class used to model the scenario (for an agent view)
  * 
- * @author jomi
+ * @author Jomi
  */
 public class LocalWorldModel extends WorldModel {
 

@@ -199,6 +199,34 @@ public class Messages {
 		}
 		return simValues;
 	}
+	
+	/**
+	 * Parses the simulation end message received from the server.
+	 * @param xml
+	 * 			the simulation message.
+	 * @return a HashMap where the keys are simulation end attributes.
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	public static HashMap<String, String> parseSimEnd(String xml)
+			throws ParserConfigurationException, SAXException, IOException {
+		HashMap<String, String> simValues = new HashMap<String, String>(); 
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		InputSource inStream = new InputSource();
+		inStream.setCharacterStream(new StringReader(xml));
+		Document doc = docBuilder.parse(inStream);
+		NodeList simNode = doc.getElementsByTagName("sim-result");
+		NamedNodeMap attributes = simNode.item(0).getAttributes();
+		Node attrNode = attributes.getNamedItem("result");
+		String attrValue = attrNode.getTextContent();
+		simValues.put("result", attrValue);
+		attrNode = attributes.getNamedItem("score");
+		attrValue = attrNode.getTextContent();
+		simValues.put("score", attrValue);
+		return simValues;
+	}
 
 	/**
 	 * Parses the request-action message received from the server and returns

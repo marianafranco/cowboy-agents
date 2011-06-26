@@ -32,6 +32,7 @@ import jason.runtime.Settings;
 import jmoise.OrgAgent;
 
 /**
+ * Common arch for the agents.
  * 
  * @author Mariana Ramos Franco, Rafael Barbolo Lopes
  */
@@ -73,7 +74,6 @@ public class CowboyArch extends OrgAgent {
     public void initAg(String agClass, ClassParameters bbPars, String asSrc, Settings stts)
     		throws JasonException {
         super.initAg(agClass, bbPars, asSrc, stts);
-
         props = new Properties();
 		try {
 			props.load(new FileInputStream("config.properties"));
@@ -121,6 +121,9 @@ public class CowboyArch extends OrgAgent {
                     } else if (ps.startsWith("perception") && model != null) {
                     	perceptionPerceived(p);
                     	ip.remove();
+                    } else if (ps.startsWith("sim-result")) {
+                    	simulationEndPerceived(p);
+                    	ip.remove();
                     }
                 }
             }
@@ -133,7 +136,7 @@ public class CowboyArch extends OrgAgent {
     /**
      * Perceived "simulation(id,opponent,steps,corralx0,corralx1,
      * corraly0,corraly1,gsizex,gsizey)".
-     * @param ps
+     * @param p
      * 			the simulation perceived.
      * @throws RevisionFailedException 
      */
@@ -151,6 +154,11 @@ public class CowboyArch extends OrgAgent {
 		int corraly0 = Integer.parseInt( p.getTerm(5).toString());
 		int corraly1 = Integer.parseInt( p.getTerm(6).toString());
 		model.setCorral(corralx0, corralx1, corraly0, corraly1);
+		// The perception of the corral location is removed from the percepts list 
+        // and "directly" added as a belief
+		Location topLeft = new Location(corralx0, corraly0);
+		Location bottomRight = new Location(corralx1, corraly1);
+		getTS().getAg().addBel(createLiteral("corral", createNumber(topLeft.x),createNumber(topLeft.y),createNumber(bottomRight.x),createNumber(bottomRight.y)));
 		
 		cModel = CowModelFactory.getModel(""+getMyId());
         cModel.setSize(w,h);
@@ -160,6 +168,19 @@ public class CowboyArch extends OrgAgent {
 
 		// add believe "sim_start(simId)"
 		getTS().getAg().addBel(Literal.parseLiteral("sim_start(" + simId + ")"));
+    }
+
+    /**
+     * Perceived "sim-result(result)".
+     * @param p
+     * 			the simulation end perceived.
+     * @throws RevisionFailedException
+     */
+    void simulationEndPerceived(Literal p) throws RevisionFailedException {
+    	String result = p.getTerm(0).toString();
+    	getTS().getAg().addBel(Literal.parseLiteral("end_of_simulation("+result+")"));
+    	model = null;
+        cModel.reset();
     }
 
     /**
@@ -201,14 +222,16 @@ public class CowboyArch extends OrgAgent {
     		if (!model.getCorral().contains(c)) { // cows in the corral are not perceived
     			if (! model.hasObject(WorldModel.COW, x, y)) {
                     model.add(WorldModel.COW, x, y);
-                    // add believe "cow(x,y,cowId)"
-                    /*
+                    /* don't add believe "cow(x,y,cowId)"
                     getTS().getAg().addBel(
                     		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
 					*/
-                    int cowId = Integer.parseInt(contentAttr);
-                    lastPerceivedCows.put(cowId, simStep);
-                    cModel.insertCow(cowId,x,y, simStep);
+                    // don't add to the model cows perceived by the cheat agents
+                    if (!getAgName().contains("cheat")) {
+                    	int cowId = Integer.parseInt(contentAttr);
+                        lastPerceivedCows.put(cowId, simStep);
+                        cModel.insertCow(cowId,x,y, simStep);
+                    }
         		}
     			/* Don't send the cow's location to other agents.
         		Message m = new Message("tell", null, null, p);
@@ -234,6 +257,7 @@ public class CowboyArch extends OrgAgent {
     	} else if (content.equals("switch")) {
     		if (! model.hasObject(WorldModel.SWITCH, x, y)) {
                 model.add(WorldModel.SWITCH, x, y);
+                getTS().getAg().addBel(createLiteral("switch", createNumber(x), createNumber(y)));
     		}
     		Message m = new Message("tell", null, null, p);
     		try {
@@ -387,7 +411,7 @@ public class CowboyArch extends OrgAgent {
                     } else if (content.equals("cow")) {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.COW, x, y)) {
                             model.add(WorldModel.COW, x, y);
-                            // add believe "cow(x,y,cowId)"
+                            // don't add believe "cow(x,y,cowId)"
                             /*
                             getTS().getAg().addBel(
                             		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
@@ -428,6 +452,7 @@ public class CowboyArch extends OrgAgent {
                     } else if (content.equals("switch")) {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.SWITCH, x, y)) {
                             model.add(WorldModel.SWITCH, x, y);
+                            getTS().getAg().addBel(createLiteral("switch", createNumber(x), createNumber(y)));
                         }
                         im.remove();
                     // empty
@@ -513,7 +538,7 @@ public class CowboyArch extends OrgAgent {
 	}
 
 	public void setFences(List<Fence> fences) {
-		this.fences = fences;
+		CowboyArch.fences = fences;
 	}
 
 	public static boolean isCheat_passed() {
@@ -540,4 +565,19 @@ public class CowboyArch extends OrgAgent {
 		CowboyArch.cheat_in_position = cheat_in_position;
 	}
 
+	public String getOpponent() {
+		return opponent;
+	}
+
+	public void setOpponent(String opponent) {
+		this.opponent = opponent;
+	}
+
+	public int getSteps() {
+		return steps;
+	}
+
+	public void setSteps(int steps) {
+		this.steps = steps;
+	}
 }

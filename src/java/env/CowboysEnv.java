@@ -134,6 +134,7 @@ public class CowboysEnv extends Environment {
     private void disconnectFromServer(String agName) throws IOException {
     	ServerConnection server = connections.get(agName);
 		server.close();
+		connections.remove(agName);
 		logger.info("[" + agName + "] Disconnected from the server.");
     }
 
@@ -183,7 +184,9 @@ public class CowboysEnv extends Environment {
     		throws Exception {
     	String action = Messages.createActionMsg(actionId, actionType);
     	ServerConnection server = connections.get(agName);
-    	server.sendMsg(action);
+    	if (null != server) {
+    		server.sendMsg(action);
+    	}
     }
 
     /**
@@ -211,10 +214,10 @@ public class CowboysEnv extends Environment {
 						break;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					final String msg = "Error when receiving a message from the server: "
 						+ e.getLocalizedMessage();
 					logger.log(Level.SEVERE, msg, e);
+					break;
 				}
 	        }
 	    }
@@ -239,8 +242,7 @@ public class CowboysEnv extends Environment {
     	} else if (type.equals("sim-start")) {
     		updateSimStartPercept(agName, msgReceived);
     	} else if (type.equals("sim-end")) {
-    		// TODO: falta fazer isso!
-
+    		updateSimEndPercept(agName, msgReceived);
     	} else if (type.equals("bye")) {
     		disconnectFromServer(agName);
     	} else if (type.equals("request-action")) {
@@ -294,6 +296,27 @@ public class CowboysEnv extends Environment {
 				+ "," + corraly1 + "," + gsizex + "," + gsizey
 				+ ")"));
     	logger.info("[" + agName + "] Received a sim-start message");
+    }
+
+    /**
+     * Adds the simulation end percept to the agent.
+     * @param agName
+     * 			the agents name.
+     * @param msgReceived
+     * 			the received simulation message.
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     */
+    private void updateSimEndPercept(String agName, String msgReceived)
+    		throws ParserConfigurationException, SAXException, IOException {
+    	HashMap<String, String> simValues = Messages.parseSimEnd(msgReceived);
+    	String result = simValues.get("result");
+    	String score = simValues.get("score");
+    	// sim-result(result)
+    	addPercept(agName, Literal.parseLiteral("sim-result(" + result + ")"));
+    	logger.info("[" + agName + "] SIM-END RESULT = " + result);
+    	logger.info("[" + agName + "] SIM-END SCORE = " + score);
     }
 
     /**

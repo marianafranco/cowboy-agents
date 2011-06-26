@@ -62,11 +62,9 @@
 					<goal id="enclose_cows" ds="herd_cows">
 						<plan operator="parallel">
 							<goal id="coordinate_cowboys" ds="open fence" type="maintenance"/>
-							<goal id="herding_cows" ds="herding cows" type="maintenance"/>
-							<goal id="go_open_fence" ds="open fence" type="maintenance"/>		
+							<goal id="herding_cows" ds="herding cows" type="maintenance"/>		
 						</plan>
 					</goal> 
-					<goal id="g3" min="1" ds="close fence" />
 				</plan>
 			</goal>
 			
@@ -76,8 +74,6 @@
             </mission>
             <mission id="m2" min="1" max="1">
                 <goal id="coordinate_cowboys" />
-                <goal id="go_open_fence" />
-                <goal id="g3" />
             </mission>
 
 		</scheme>
