@@ -5,7 +5,6 @@ import java.util.Vector;
 import java.util.List;
 import java.util.logging.Logger;
 
-
 import alice.cartago.ArtifactId;
 import alice.cartago.CartagoException;
 import alice.cartago.CartagoService;

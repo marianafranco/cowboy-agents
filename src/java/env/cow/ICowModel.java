@@ -1,7 +1,6 @@
 package env.cow;
 
 
-
 /**
  * Interface for cows centralization
  *
@@ -28,7 +27,7 @@ public interface ICowModel {
 	/**
 	 * Inserts a cow in position, removing any cow that was in position
 	 */
-	public void insertCow(int id, int x, int y);
+	public void insertCow(int id, int x, int y, int step);
 		
 	public void updateCows();
 	public Cow[] getCows();

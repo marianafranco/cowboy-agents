@@ -13,7 +13,7 @@
 // adopts a role
 +group(GrSpec,Id)
 	: desired_role(GrSpec,Role)
-	<- jmoise.adopt_role(Role,Id);
+	<-  jmoise.adopt_role(Role,Id);
 		.print(Role," on group ",GrSpec," created").
 
 /* Functional events */
@@ -38,14 +38,14 @@
 // when the root goal of the scheme is achieved,
 // remove my missions and the scheme
 +goal_state(Sch, _[root], achieved)
-	<- jmoise.remove_mission(Sch);
-	.my_name(Me);
-	if (scheme(_,Sch)[owner(Me)]) {
-		if (not sch_players(Sch,0)) {
-			.wait( { +sch_players(Sch,0)} , 1000, _)
-		};
-		jmoise.remove_scheme(Sch)
-	}.
+	<-  jmoise.remove_mission(Sch);
+		.my_name(Me);
+		if (scheme(_,Sch)[owner(Me)]) {
+			if (not sch_players(Sch,0)) {
+				.wait( { +sch_players(Sch,0)} , 1000, _)
+			};
+			jmoise.remove_scheme(Sch)
+		}.
 
 // if some scheme is finished, drop all intentions related to it.
 -scheme(_Spec,Id)
@@ -53,7 +53,7 @@
 
 +error(M)[source(orgManager)]
 	<- .print("Error in organisational action: ",M); -error(M)[source(orgManager)].
-	
+
 
 // ********************************************** //
 // Common plans for all the agents on the system. //
@@ -61,8 +61,8 @@
 
 // connects to the server
 +!connect_to_server
-	<- connectToServer;
-	!authenticate_to_server.
+	<-  connectToServer;
+		!authenticate_to_server.
 -!connect_to_server[error_msg(M),code(C),code_line(L)]
    <- .print("Error when connecting to server, command: ",C,", line ",L,", message: ",M).
 
@@ -73,26 +73,27 @@
    <- .print("Error authenticating to the server, command: ",C,", line ",L,", message: ",M).
 
 
-// search cow
-+!search_cow(near_unvisited)
-   :  pos(X,Y,_) & not cow(_,_,_) &
-      jia.near_least_visited(X,Y,ToX,ToY)
-   <- !pos(ToX,ToY);
-      !!search_cow(near_unvisited).
+// goal: search cow
+{ begin maintenance_goal("+pos(_,_,_)") }
 
-+!search_cow(near_unvisited) : not pos(_,_,_)
-   <- !!search_cow(near_unvisited).
++!search_cow
+   	: pos(X,Y,ActionId) & not jia.found_cow &
+      jia.near_least_visited(X,Y,ToX,ToY) &
+      not .intend(pos(_,_)) & not target(TX,TY)
+   	<-  !pos(ToX,ToY).
 
-+!search_cow(near_unvisited)
-	: cow(CowX,CowY,CowId) & .my_name(Me) & scheme_group(Sch,G)
-	<- 
-	.print("Cow ",CowId," found!");
-	jmoise.set_goal_state(Sch,g1,satisfied); // cow found
-	if (Me == leader) {
-		jmoise.set_goal_state(Sch,g22,satisfied); // cow id received
-	} else {
-		jmoise.set_goal_state(Sch,g21,satisfied); // cow id sent
-	}.
++!search_cow : not pos(_,_,_) & not target(TX,TY)
+   	<-  .wait({+pos(_,_,_)}).
 
--!search_cow(near_unvisited)[error_msg(M),code(C),code_line(L)]
++!search_cow
+	: jia.found_cow & scheme_group(Sch,G)
+	<-  .print("Cow found!");
+		jmoise.set_goal_state(Sch,search_cow,satisfied). // cow found
+
++!search_cow : target(TX,TY)
+	<- 	.drop_desire(pos(ToX,ToY)).
+
+-!search_cow[error_msg(M),code(C),code_line(L)]
 	<- .print("Error on search_cow, command: ",C,", line ",L,", message: ",M).
+
+{ end }

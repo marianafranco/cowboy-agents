@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Collections;
 
 
-
 /**
  * Class used to centralize cows
  *
@@ -76,7 +75,7 @@ public class CowModel implements ICowModel{
 	/**
 	 * Inserts a cow in position, removing any cow that was in position
 	 */
-	public void insertCow(int id, int x, int y)
+	public void insertCow(int id, int x, int y, int step)
 	{
 		
 		synchronized(cows) {
@@ -85,7 +84,7 @@ public class CowModel implements ICowModel{
 			if(toRem != null) {
 				freePos(toRem.x,toRem.y);
 			}
-			cows.put(id, new Cow(id,x,y));
+			cows.put(id, new Cow(id,x,y,step));
 			grid[x][y]=id;
 		}
 

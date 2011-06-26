@@ -25,16 +25,16 @@ import arch.WorldModel;
  * @author jomi
  */
 public class direction extends DefaultInternalAction {
-    
+
     WorldModel.Move[] actionsOrder = new WorldModel.Move[WorldModel.nbActions];
     Random     random = new Random();
-    
+
     public direction() {
         for (int i=0; i<WorldModel.nbActions; i++) {
             actionsOrder[i] = Search.defaultActions[i];
         }
     }
-    
+
     @Override
     public Object execute(TransitionSystem ts, Unifier un, Term[] terms) throws Exception {
         try {
@@ -47,21 +47,21 @@ public class direction extends DefaultInternalAction {
                 if (m != null)
                     sAction = m.toString();
             } else {
-                ts.getLogger().info("No route from "+ terms[0]+","+terms[1] +" to "+ terms[2]+","+terms[3]+"!"+"\n"+ ((CowboyArch)ts.getUserAgArch()).getModel());
+                //ts.getLogger().info("No route from "+ terms[0]+","+terms[1] +" to "+ terms[2]+","+terms[3]+"!"); //+ ((CowboyArch)ts.getUserAgArch()).getModel());
             }
             return un.unifies(terms[4], new Atom(sAction));
         } catch (Throwable e) {
-            ts.getLogger().log(Level.SEVERE, "direction error: "+e, e);    		
+            ts.getLogger().log(Level.SEVERE, "direction error: " + e, e);
         }
         return false;
     }
-    
+
     protected Nodo findPath(TransitionSystem ts, Term[] terms) throws Exception {
         CowboyArch arch = (CowboyArch)ts.getUserAgArch();
         LocalWorldModel model = arch.getModel();
 
         Nodo solution = null;
-        
+
         int iagx = (int)((NumberTerm)terms[0]).solve();
         int iagy = (int)((NumberTerm)terms[1]).solve();
         int itox = (int)((NumberTerm)terms[2]).solve();
@@ -74,14 +74,14 @@ public class direction extends DefaultInternalAction {
 
             Location from = new Location(iagx, iagy);
             Location to   = new Location(itox, itoy);
-            
+
             // randomly change the place of two actions in actionsOrder
             int i1 = random.nextInt(WorldModel.nbActions);
             int i2 = 0; // more radical change, the selected action will be the first, previously: random.nextInt(WorldModel.nbActions);
             WorldModel.Move temp = actionsOrder[i2];
             actionsOrder[i2] = actionsOrder[i1];
             actionsOrder[i1] = temp;
-            
+
             boolean fencesAsObs = terms.length > 5  && terms[5].toString().equals("fences");
             // if an agent is inside the corral, corral must be a path, no do not consider corra as obstacle here
             Search astar    = new Search(model, from, to, actionsOrder, true, false, true, false, false, fencesAsObs, arch);
@@ -100,7 +100,7 @@ public class direction extends DefaultInternalAction {
                     to = model.nearFree(to, null);
                     s = new Search(model, from, to, arch);
                 }
-                
+
                 // run A* again
                 astar    = new Search(model, from, to, actionsOrder, true, false, true, false, false, false, arch);
                 solution = astar.search();
@@ -109,4 +109,3 @@ public class direction extends DefaultInternalAction {
         return solution;
     }
 }
-

@@ -6,7 +6,6 @@ import alice.cartago.security.*;
 import alice.cartago.*;
 import java.lang.String;
 
-
 /**
  * Class used to centralize cows, using cartago
  *
@@ -87,10 +86,10 @@ public class CCowModel implements ICowModel{
 	/**
 	 * Inserts a cow in.tion, removing any cow that was in.tion
 	 */
-	public void insertCow(int id, int x, int y)
+	public void insertCow(int id, int x, int y, int step)
 	{
 		try{
-			cWps.use(null,cArt,new Op("cInsertCow",id,x,y),null,null,-1);
+			cWps.use(null,cArt,new Op("cInsertCow",id,x,y,step),null,null,-1);
 		} catch (Exception e) {
 			logger.severe("Unable to use artifact\n"+e);
 		}

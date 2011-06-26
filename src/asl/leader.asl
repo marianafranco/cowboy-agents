@@ -18,8 +18,7 @@ desired_mission(catchCowScheme,m2).
 
 // create a group to the team
 +!create_group : true 
-   <- //.send(orgManager, achieve, create_group(wpgroup)).
-      jmoise.create_group(gr_name(team),team);
+   <- jmoise.create_group(gr_name(team),team);
 	  .print("Group ", "team" ," created");
 	  jmoise.create_group(capture,team);
 	  .print("Sub-group ","capture"," created");
@@ -31,15 +30,7 @@ desired_mission(catchCowScheme,m2).
 
 /* Organisational Events  */
 
-/* Structural events */
-// when I start playing the role "leader",
-// create a catchCow scheme
-/*
-+play(Me,leader,GId)
-	: .my_name(Me)
-	<- jmoise.create_scheme(catchCowScheme,[GId]);
-	.print("Scheme created").
-*/	
+/* Structural events */	
 
 /* Functional events */
 // when a scheme has finished, start another
@@ -58,31 +49,56 @@ desired_mission(catchCowScheme,m2).
 	.print("Scheme created").
 	
 +sim_start(SimId): true
-	<- .print("Simulation started");
-	!search_cow(near_unvisited).
+	<- .print("Simulation started").
 
-/*
-+!g1[scheme(Sch)] : true
-	<- .print("Goal g1 satisfied!");
-		jmoise.set_goal_state(Sch,g1,satisfied).
 
-+!g22[scheme(Sch)] : true
-	<- .print("Goal g22 satisfied!");
-		jmoise.set_goal_state(Sch,g22,satisfied).
-   
-+!g31[scheme(Sch)] : true
-	<- .print("Goal g31 satisfied!");
-		jmoise.set_goal_state(Sch,g31,satisfied).
-   
-+!g4[scheme(Sch)] : true
-	<- .print("Goal g4 satisfied!");
-		jmoise.set_goal_state(Sch,g4,satisfied).
-   
-+!g5[scheme(Sch)] : true
-	<- .print("Goal g5 satisfied!");
-		jmoise.set_goal_state(Sch,g5,satisfied).
-   
-+!g6[scheme(Sch)] : true
-	<- .print("Goal g6 satisfied!");
-		jmoise.set_goal_state(Sch,g1,satisfied).
+// goal: coordinate cowboys
+{ begin maintenance_goal("+pos(_,_,_)") }
+
++!coordinate_cowboys : pos(X,Y,_) & .my_name(Me) & scheme_group(Sch,G) &
+	not .intend(coordinate_cowboys) &
+	jia.preferable_cluster(X,Y,L,S,N) &
+	.list(L) &
+	.length(L) > 0 &
+	L = [pos(ClX,ClY),_] &
+	.count(play(_,captor,G),NAg) &
+	jia.position_to_cluster(ClX,ClY,NAg,Formation)
+  	<-	.findall(P, play(P,captor,G), Agents);
+  	   	.print("Formation is: ",Formation," and Agents are: ",Agents);
+  	   	!send_target(Agents,Formation).
+
+/* mudar para ir para a cerca
++!coordinate_cowboys : pos(X,Y,_) & jia.near_least_visited(X,Y,ToX,ToY) &
+	not .intend(pos(_,_)) 
+   	<-  !pos(ToX,ToY).
 */
+
++!coordinate_cowboys.
+
+-!coordinate_cowboys[error_msg(M),code(C),code_line(L)]
+	<- .print("Error on coordinate_cowboys, command: ",C,", line ",L,", message: ",M).
+
+{ end }
+
++!send_target(Agents,[pos(X,Y)|TLoc])
+ 	<- !find_closest(Agents,pos(X,Y),NearAg);
+ 	   .send(NearAg,tell,target(X,Y));
+ 	   .delete(NearAg,Agents,TAg);
+ 	   !send_target(TAg,TLoc).
+
++!send_target([],[]).
+ 
++!find_closest(Agents, pos(FX,FY), NearAg) // find the agent near to pos(X,Y)
+ 	<- .my_name(Me);
+ 	   .findall(d(D,Ag),
+           .member(Ag,Agents) & ally_pos(Ag,AgX,AgY) & jia.path_length(FX,FY,AgX,AgY,D),
+                            Distances);
+           .min(Distances,d(_,NearAg)).
+-!find_closest[error_msg(M),code(C),code_line(L)]
+	<- .print("Error on find_closest, command: ",C,", line ",L,", message: ",M).
+
+// goal: open fence
+{ begin maintenance_goal("+pos(_,_,_)") }
++!go_open_fence
+	<-  .print("go open fence").
+{ end }

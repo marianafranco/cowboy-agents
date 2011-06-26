@@ -27,23 +27,22 @@ desired_mission(catchCowScheme,m1).
 /* Plans */
 
 +sim_start(SimId): true
-	<- .print("Simulation started");
-	!search_cow(near_unvisited).
+	<- .print("Simulation started").
 
-/*
-+!g1[scheme(Sch)] : true
-	<- .print("Goal g1 satisfied!");
-		jmoise.set_goal_state(Sch,g1,satisfied).
+// goal: herding cows
+{ begin maintenance_goal("+pos(_,_,_)") }
 
-+!g21[scheme(Sch)] : true
-	<- .print("Goal g21 satisfied!");
-		jmoise.set_goal_state(Sch,g21,satisfied).
-		
-+!g32[scheme(Sch)] : true
-	<- .print("Goal g32 satisfied!");
-		jmoise.set_goal_state(Sch,g32,satisfied).
++!herding_cows : .intend(search_cow)
+	<-  .drop_desire(search_cow).
 
-+!g4[scheme(Sch)] : true
-	<- .print("Goal g4 satisfied!");
-		jmoise.set_goal_state(Sch,g4,satisfied).
-*/
++!herding_cows : pos(X,Y,_) & not target(TX,TY) &
+	jia.near_least_visited(X,Y,ToX,ToY)
+	<- 	.drop_desire(search_cow);
+		!pos(ToX,ToY).
+
++!herding_cows : target(TX,TY)
+	<- 	.drop_desire(move);
+		!move.
+
++!herding_cows.
+{ end }

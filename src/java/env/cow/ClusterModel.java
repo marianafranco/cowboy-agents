@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Vector;
 import java.lang.Math;
 
-
 import jia.Vec;
 
 
@@ -48,10 +47,7 @@ public class ClusterModel implements Runnable,IClusterModel{
 	 *   3: Use 2*A: A = Average Radius
 	 *   4: 2*Median
 	 */
-	
-	
-	
-	
+
 	private boolean spc = true;
 	private boolean useTuner = false;
 	private int useClusterer = 1;
@@ -105,16 +101,13 @@ public class ClusterModel implements Runnable,IClusterModel{
 	 */
 	public synchronized void run(){
 		if(actStep<clStep){
-
 			actStep = clStep;
 			alloc = calculate();
 			cCenters();
-		//	separateClusters();
-		//	cCenters();
+//			separateClusters();
 			setMap();
 			cMaxDist();
-			printClusters();
-
+//			printClusters();
 		}
 	}
 
@@ -777,7 +770,7 @@ public class ClusterModel implements Runnable,IClusterModel{
 		try {
 			String str = ClusterEvaluation.evaluateClusterer(cluster,options);
 			//logger.info(str);
-			logger.info("HHH calculated with "+ useClusterer);
+			//logger.info("HHH calculated with "+ useClusterer);
 			//logger.info("HHH"+str);
 			int[] assign = new int[dataNumber];
 			String[] tmp = str.split("\n");

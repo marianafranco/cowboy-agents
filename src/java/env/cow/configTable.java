@@ -1,6 +1,4 @@
 package env.cow;
-
-
 /**
  *
  * @author gustavo

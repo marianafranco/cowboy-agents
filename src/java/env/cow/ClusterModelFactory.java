@@ -1,6 +1,5 @@
 package env.cow;
 
-
 public class ClusterModelFactory {
 	static private IClusterModel clModel;
 	static public boolean centralized=true;

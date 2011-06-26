@@ -18,7 +18,7 @@
         	<role id="captor"> <extends role="cowboy"/> </role>
         	<role id="cheat"> <extends role="cowboy"/> </role>
         	<role id="cheat_helper"> <extends role="cowboy"/> </role>
-        	<role id="leader"> <extends role="captor"/> </role>
+        	<role id="leader"> <extends role="cowboy"/> </role>
 		</role-definitions>
 
         <group-specification id="team">
@@ -58,38 +58,26 @@
 
 			<goal id="catchCow" min="1">
 				<plan operator="sequence">
-					<goal id="g1" min="1" ds="find a cow" />
-					<goal id="g2" ds="get cow id">
+					<goal id="search_cow" ds="search a cow" type="maintenance"/>
+					<goal id="enclose_cows" ds="herd_cows">
 						<plan operator="parallel">
-							<goal id="g21" min="1" ds="send cow id" />
-							<goal id="g22" min="1" ds="receive cow id" />
+							<goal id="coordinate_cowboys" ds="open fence" type="maintenance"/>
+							<goal id="herding_cows" ds="herding cows" type="maintenance"/>
+							<goal id="go_open_fence" ds="open fence" type="maintenance"/>		
 						</plan>
-					</goal>
-					<goal id="g3" ds="send instructions to capture the cow">
-						<plan operator="parallel">
-							<goal id="g31" min="1" ds="send orders" />
-							<goal id="g32" min="1" ds="receive orders" />
-						</plan>
-					</goal>
-					<goal id="g4" min="1" ds="enclose cow" />
-					<goal id="g5" min="1" ds="open fence" />
-					<goal id="g6" min="1" ds="close fence" />
+					</goal> 
+					<goal id="g3" min="1" ds="close fence" />
 				</plan>
 			</goal>
 			
 			<mission id="m1" min="1">
-                <goal id="g1" />
-                <goal id="g21" />
-                <goal id="g32" />
-                <goal id="g4" />
+                <goal id="search_cow" />
+                <goal id="herding_cows" />
             </mission>
             <mission id="m2" min="1" max="1">
-                <goal id="g1" />
-                <goal id="g22" />
-                <goal id="g31" />
-                <goal id="g4" />
-                <goal id="g5" />
-                <goal id="g6" />
+                <goal id="coordinate_cowboys" />
+                <goal id="go_open_fence" />
+                <goal id="g3" />
             </mission>
 
 		</scheme>

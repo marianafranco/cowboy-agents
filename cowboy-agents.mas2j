@@ -10,12 +10,13 @@ MAS cowboy_agents {
    environment: env.CowboysEnv
 
    agents:
-		orgManager [osfile="cowboy-agents-os.xml",gui=yes] 
+		orgManager [osfile="cowboy-agents-os.xml",gui=no] 
                   agentArchClass jmoise.OrgManager;
 
    		leader
    			agentArchClass jmoise.OrgAgent 
-   			agentArchClass arch.CowboyArch;
+   			agentArchClass arch.CowboyArch
+   			beliefBaseClass agent.UniqueBelsBB("ally_pos(key,_,_)", "target(_,_)");
    			
    		cheat
    			agentArchClass jmoise.OrgAgent
@@ -25,10 +26,12 @@ MAS cowboy_agents {
    			agentArchClass jmoise.OrgAgent
    			agentArchClass arch.CowboyArch;
    			
-   		cowboy     	#2
+   		cowboy     	#7
    			agentArchClass jmoise.OrgAgent 
-   			agentArchClass arch.CowboyArch;
+   			agentArchClass arch.CowboyArch
+   			beliefBaseClass agent.UniqueBelsBB("ally_pos(key,_,_)", "target(_,_)");
 
+   directives: maintenance_goal = agent.OrgMaintenanceGoal;
    classpath: "lib/moise.jar";"lib/jmoise.jar";
    aslSourcePath: "src/asl";
 }

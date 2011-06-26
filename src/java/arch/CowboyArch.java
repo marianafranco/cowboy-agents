@@ -5,8 +5,11 @@ import static jason.asSyntax.ASSyntax.createNumber;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,8 +43,8 @@ public class CowboyArch extends OrgAgent {
     private int steps = -1;
     private int numOfCowboys = -1;
 
-    ICowModel		cModel = null;
-	IClusterModel	clModel = null;
+    private ICowModel		cModel = null;
+	private IClusterModel	clModel = null;
 
 	public static Atom aOBSTACLE    = new Atom("obstacle");
 	public static Atom aENEMY       = new Atom("enemy");
@@ -53,6 +56,10 @@ public class CowboyArch extends OrgAgent {
     public static Atom aOPEN        = new Atom("open");
     public static Atom aCLOSED      = new Atom("closed");
 
+    /** stores the location of some cows and the step they were seen */
+    private Map<Integer,Integer> lastPerceivedCows = new HashMap<Integer, Integer>();
+    private int simStep  = 0;
+    
     // sabotage
     private static List<Fence> fences = new ArrayList<Fence>();
     private static boolean cheat_passed = false, cheat_in_position = false, helper_in_position = false;
@@ -76,7 +83,7 @@ public class CowboyArch extends OrgAgent {
 			logger.log(Level.SEVERE, msg, e);
 		}
 		numOfCowboys = Integer.parseInt(props.getProperty("numberOf.comboys"));
-		
+
 		/* Load fences positions */
 		String[] fences_pos = props.getProperty("fences.open_positions").split(" ");
 		for(int i=0; i < fences_pos.length; i++) {
@@ -148,7 +155,9 @@ public class CowboyArch extends OrgAgent {
 		cModel = CowModelFactory.getModel(""+getMyId());
         cModel.setSize(w,h);
         clModel = ClusterModelFactory.getModel(""+getMyId());
-		
+        clModel.setStepcl(simStep);
+        new Thread((Runnable) clModel).start();
+
 		// add believe "sim_start(simId)"
 		getTS().getAg().addBel(Literal.parseLiteral("sim_start(" + simId + ")"));
     }
@@ -174,40 +183,42 @@ public class CowboyArch extends OrgAgent {
     			if (! model.hasObject(WorldModel.ENEMY, x, y)) {
                     model.add(WorldModel.ENEMY, x, y);
         		}
+    			/* Don't send the enemy's location to other agents.
         		Message m = new Message("tell", null, null, p);
         		try {
     				broadcast(m);
     			} catch (Exception e) {
     				e.printStackTrace();
     			}
+    			*/
     		}
     	// update the model with obstacle and share them with other agents
     	} else if (content.equals("obstacle")) {
-    		if (! model.hasObject(WorldModel.OBSTACLE, x, y)) {
-                model.add(WorldModel.OBSTACLE, x, y);
-    		}
-    		Message m = new Message("tell", null, null, p);
-    		try {
-				broadcast(m);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+    		obstaclePerceived(x, y, p);
 		// update the model with the cow location and share this with other agents
     	} else if (content.equals("cow")) {
-    		if (! model.hasObject(WorldModel.COW, x, y)) {
-                model.add(WorldModel.COW, x, y);
-                // add believe "cow(x,y,cowId)"
-                getTS().getAg().addBel(
-                		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
-                int cowId = Integer.parseInt(contentAttr);
-                cModel.insertCow(cowId,x,y);
+    		Location c = new Location(x, y);
+    		if (!model.getCorral().contains(c)) { // cows in the corral are not perceived
+    			if (! model.hasObject(WorldModel.COW, x, y)) {
+                    model.add(WorldModel.COW, x, y);
+                    // add believe "cow(x,y,cowId)"
+                    /*
+                    getTS().getAg().addBel(
+                    		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
+					*/
+                    int cowId = Integer.parseInt(contentAttr);
+                    lastPerceivedCows.put(cowId, simStep);
+                    cModel.insertCow(cowId,x,y, simStep);
+        		}
+    			/* Don't send the cow's location to other agents.
+        		Message m = new Message("tell", null, null, p);
+        		try {
+    				broadcast(m);
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
+    			*/
     		}
-    		Message m = new Message("tell", null, null, p);
-    		try {
-				broadcast(m);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
     	// update the model with the corral enemy location and share this with other agents
     	} else if (content.equals("corral") && contentAttr.equals("enemy")) {
 			if (! model.hasObject(WorldModel.ENEMYCORRAL, x, y)) {
@@ -255,12 +266,14 @@ public class CowboyArch extends OrgAgent {
     		if (!model.isFree(x, y)) {
     			model.add(WorldModel.CLEAN, x, y);
     		}
+    		/* Don't send the empty information to other agents.
     		Message m = new Message("tell", null, null, p);
     		try {
 				broadcast(m);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			*/
     	}
     }
 
@@ -268,6 +281,11 @@ public class CowboyArch extends OrgAgent {
     public void obstaclePerceived(int x, int y, Literal p) {
         if (! model.hasObject(WorldModel.OBSTACLE, x, y)) {
             model.add(WorldModel.OBSTACLE, x, y);
+
+            if(clModel == null) 
+    			clModel = ClusterModelFactory.getModel(""+getMyId());
+    		clModel.insertTree(x, y);
+
             Message m = new Message("tell", null, null, p);
             try {
                 broadcast(m);
@@ -292,7 +310,11 @@ public class CowboyArch extends OrgAgent {
     	int x =  Integer.parseInt(p.getTerm(1).toString());
     	int y =  Integer.parseInt(p.getTerm(2).toString());
     	locationPerceived(x, y);
-    	
+    	simStep = simStep + 1;
+
+    	// updates cluster model
+    	clModel.setStepcl(simStep);
+    	new Thread((Runnable) clModel).start();
     }
 
     /** update the model with the agent location and share this information with team mates */
@@ -366,8 +388,13 @@ public class CowboyArch extends OrgAgent {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.COW, x, y)) {
                             model.add(WorldModel.COW, x, y);
                             // add believe "cow(x,y,cowId)"
+                            /*
                             getTS().getAg().addBel(
                             		Literal.parseLiteral("cow(" + x +"," + y + "," + contentAttr + ")"));
+							*/
+                            int cowId = Integer.parseInt(contentAttr);
+                            lastPerceivedCows.put(cowId, simStep);
+                            cModel.insertCow(cowId,x,y, simStep);
                         }
                         im.remove();
                     // enemy
@@ -420,6 +447,11 @@ public class CowboyArch extends OrgAgent {
                             int agid = getAgId(m.getSender());
                             model.setAgPos(agid, x, y);
                             model.incVisited(x, y);
+
+                            // update ally_pos(sender,x,y)
+                            Literal tAlly = createLiteral("ally_pos", new Atom(m.getSender()),
+                            		createNumber(x), createNumber(y));
+    						getTS().getAg().addBel( tAlly );
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -432,22 +464,7 @@ public class CowboyArch extends OrgAgent {
         }
     }
 
-	void setSimId(String id) {
-        simId = id;
-    }
-
-    public String getSimId() {
-        return simId;
-    }
-
-	public int getMyId() {
-        if (myId < 0) {
-            myId = getAgId(getAgName());
-        }
-        return myId;
-    }
-
-	public static int getAgId(String agName) {
+    public static int getAgId(String agName) {
 		if (agName.equals("leader")) {
 			return 0;
 		} else if (agName.equals("cheat")) {
@@ -459,8 +476,32 @@ public class CowboyArch extends OrgAgent {
 		}
 	}
 
+    public boolean hasfoundCow() {
+    	for (Entry<Integer, Integer> entry : lastPerceivedCows.entrySet()) {
+    		if (entry.getValue() > simStep - 10) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+
 	public static Literal createCellPerception(int x, int y, Term obj) {
         return createLiteral("cell", createNumber(x), createNumber(y), obj); 
+    }
+
+    public int getMyId() {
+        if (myId < 0) {
+            myId = getAgId(getAgName());
+        }
+        return myId;
+    }
+
+	void setSimId(String id) {
+        simId = id;
+    }
+
+    public String getSimId() {
+        return simId;
     }
 
 	public LocalWorldModel getModel() {

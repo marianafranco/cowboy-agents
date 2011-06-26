@@ -2,7 +2,6 @@ package env.cow;
 
 import java.lang.String;
 
-
 public class CowModelFactory {
 	static private ICowModel cModel;
 	static public boolean centralized=true;

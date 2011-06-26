@@ -137,7 +137,7 @@ public class next_fence extends DefaultInternalAction {
                             sAction = ac;
                         }
                     } else {
-                        ts.getLogger().info("No route from "+from+" to "+to+"!"+"\n"+model);
+                        //ts.getLogger().info("No route from "+from+" to "+to+"!"+"\n"); //+model);
                     }
                 }
                 
