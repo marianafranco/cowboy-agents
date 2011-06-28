@@ -6,6 +6,7 @@
 \usepackage{indentfirst}
 \usepackage{colortbl} % Permite o uso de cores em tabelas
 \usepackage{url}
+\usepackage{listings} % Permite inserir codigo
  
 \renewcommand{\labelitemi}{$\bullet$}
 
@@ -467,13 +468,14 @@ Todos os agentes do sistema estão compromissados com pelo menos uma meta global
 
 % Tecnologia SMA utilizada, características da implementação, etc.
 
-Para o desenvolvimento do SMA, foram utilizadas as linguagens XML, Java e AgentSpeak. Para a execução do SMA, foi utilizado o interpretador JASON e como ambiente de desenvolvimento, foi utilizada a IDE Eclipse com o plugin JASON instalado. A seguir, cada uma dessas tecnologias será apresentada com seu papel no projeto.
+Para o desenvolvimento do SMA, foram utilizadas as linguagens XML, Java e AgentSpeak. Para a execução do SMA, foi utilizado a plataforma JASON e como ambiente de desenvolvimento, a IDE Eclipse com o plugin JASON instalado. A seguir, cada uma dessas tecnologias será apresentada com seu papel no projeto.
 
 A linguagem de marcação XML foi utilizada para definir a especificação organizacional do SMA em MOISE+. Foram descritas as especificações estrutural, funcional e normativa do SMA em XML.
 
-A linguagem Java foi utilizada para implementar o socket de comunicação com o servidor de simulação do \textit{Multi-Agent Programming Contest} de 2009, assim como para implementar muitas das funcionalidades (\textit{InternalActions}) dos agentes. Por exemplo, a funcionalidade de movimento de um agente foi implementada em Java, através de cálculo de rota e troca de mensagens com o servidor de simulação.
+A linguagem Java foi utilizada para implementar o socket de comunicação com o servidor de simulação do \textit{Multi-Agent Programming Contest} de 2009, assim como para implementar muitas das funcionalidades dos agentes, tais como: \textit{InternalActions} - ferramentas escritas em Java para fazer cálculos que seriam
+ineficientes em AgentSpeak; \textit{WorldModel} - modelo de mundo do agente; \textit{CowboyArch} - arquitetura dos agentes. Por exemplo, a funcionalidade de movimento de um agente foi implementada em Java, através de cálculo de rota e troca de mensagens com o servidor de simulação.
 
-A linguagem AgentSpeak foi utilizada para implementar os agentes. Para cada agente, foram definidas suas crenças, regras e metas iniciais, assim como as missões às quais ele estaria comprometido à realizar. Também foram implementados eventos organizacionais, estruturais e funcionais para cada agente, assim como seus planos, utilizando a linguagem AgentSpeak.
+A linguagem AgentSpeak foi utilizada para implementar os agentes. Para cada agente, foram definidas suas crenças, regras e metas iniciais, assim como as missões às quais ele estaria comprometido à realizar. Também foram implementados eventos organizacionais, estruturais e funcionais para cada agente, assim como seus planos.
 
 O interpretador JASON foi utilizado para executar e depurar o SMA desenvolvido. Ele realiza a conexão entre a organização MOISE+ definida em XML, as implementações dos agentes em AgentSpeak e as implementações de suas funcionalidades em Java. Para facilitar o desenvolvimento, foi utilizada a IDE Eclipse com o plugin JASON instalado.
 
@@ -517,26 +519,60 @@ A estratégia do nosso time de agentes consiste em:
 Para garantir a captura de pelo menos 1 vaca, foi implementado um esquema em MOISE+ de captura de vacas que consiste em procurar uma vaca e guardá-la dentro do curral. Para impedir que o time adversário capture vacas, foi implementado um esquema que garante que a cerca do time adversário esteja sempre aberta, tornando-se impossível assim guardar a vaca dentro do curral.
 
 % TODO: Describe what is stored in the word model
+Conforme as mensagens são recebidas do servidor, o agente atualiza o seu modelo de mundo (\textit{WorldModel}) com o conteúdo de cada célula ao seu redor e, no caso dos cowboys, repassa essas informações para o cowboy líder. Dessa forma o líder passa a ter uma visão mais completa sobre o ambiente.
 
-O algoritmo de deslocamento de agentes implementado consiste em receber a posição atual do agente e a posição final desejada. Com isso, é possível obter o sentido de movimento que deve ser percorrido (\textit{norte}, \textit{nordeste}, \textit{leste}, \textit{sudeste}, \textit{sul}, \textit{sudoeste}, \textit{oeste} ou \textit{noroeste}). Antes de executar o movimento, é verificado se não há um obstáculo na posição que será alcançada. Quando há obstáculo, o agente se move aleatoriamente em outro sentido, sem que ocorra bloqueio de seu movimento.
-
+Inicialmente os agentes andam livremente sobre o mapa, procurando sempre ir para a célula ao seu redor menos visitada. O algoritmo de deslocamento dos agentes consiste em receber a posição atual do agente e a posição final desejada. Com isso, é possível obter o sentido de movimento que deve ser percorrido (\textit{norte}, \textit{nordeste}, \textit{leste}, \textit{sudeste}, \textit{sul}, \textit{sudoeste}, \textit{oeste} ou \textit{noroeste}). Antes de executar o movimento, é verificado se não há um obstáculo na posição que será alcançada. Quando há obstáculo, o agente se move aleatoriamente em outro sentido, sem que ocorra bloqueio de seu movimento.
 
 % TODO: Herding cows
+A procura de uma vaca consiste em um agente cowboy se movimentar pelo ambiente até sentir a presença de uma vaca. Após encontrar a vaca, o agente informa ao agente líder a localização desta vaca. Ao notar a existência de um cluster de vacas o agente líder define a formação à ser tomada pelos cowboys e a captura das vacas é iniciada. A captura do cluster de vacas é feita em grupo pelos agentes cowboys. O cowboy líder envia para cada agente a posição à ser tomada e os cowboys encurralam e empurram o cluster de vacas em sentido ao curral. Enquanto isso o cowboy líder se movimenta até a cerca do curral para mantê-la aberta e assim as vacas poderem entrar.
 
-A procura de uma vaca consiste em um agente \textit{cowboy} se movimentar pelo ambiente até sentir a presença de uma vaca. Após encontrar a vaca, o agente informa ao agente \textit{cowboy líder} a localização desta vaca e sua captura é iniciada. A captura de uma vaca é feita em grupo pelos agentes \textit{cowboys}. O \textit{cowboy líder} envia a localização da vaca para os outros \textit{cowboys}, que a encurralam e a empurram em sentido à cerca. Quando a vaca chega próxima à cerca, o \textit{cowboy líder} abre a cerca e os \textit{cowboys} empurram a vaca para dentro dela. Quando a vaca entra na cerca, o \textit{cowboy líder} simplesmente a fecha.
+Para impedir que o time adversário capture vacas, um cowboy sabotador se move até a cerca do time adversário e a mantém sempre aberta. Desta forma, é improvável que uma vaca capturada da equipe adversária fique presa dentro da cerca.
 
-Para impedir que o time adversário capture vacas, um cowboy \textit{sabotador} se move até a cerca do time adversário e a mantém sempre aberta. Desta forma, é improvável que uma vaca capturada da equipe adversária fique presa dentro da cerca.
 
-% Inconsistências
+% ### INCONSISTÊNCIAS ###
 \subsection{Inconsistências entre projeto e implementação}
 
 Durante o desenvolvimento do projeto, foram realizados testes com o ambiente de simulação que revelaram algumas falhas na especificação do projeto. Essas falhas geraram pequenas inconsistências entre a especificação do projeto e a implementação final, que serão apresentadas a seguir.
 
-Uma falha identificada durante testes com o servidor de simulação foi a abertura e o fechamento das cercas. Não estava explicitado que a cerca ficava aberta apenas enquanto um \textit{cowboy} estivesse ao lado de seu botão. Desta forma, para que um \textit{cowboy} consiga passar pela cerca, é necessário que um outro \textit{cowboy} fique ao lado do botão de abertura e fechamento da cerca. Havia sido suposto que o botão da cerca era um interruptor e não um botão de pressão. Assim, foi necessário modificar a implementação do esquema de atrapalhar a equipe adversária para que dois \textit{cowboys}, ao invés de apenas um, caminhem até a cerca do inimigo e a mantenham sempre aberta.
+Uma falha identificada durante testes com o servidor de simulação foi a abertura e o fechamento das cercas. Não estava explicitado que a cerca ficava aberta apenas enquanto um cowboy estivesse ao lado de seu botão. Desta forma, para que um cowboy consiga passar pela cerca, é necessário que um outro cowboy fique ao lado do botão de abertura e fechamento da cerca. Havia sido suposto que o botão da cerca era um interruptor e não um botão de pressão. Assim, foi necessário modificar a implementação do esquema de atrapalhar a equipe adversária para que dois cowboys, ao invés de apenas um, caminhem até a cerca do inimigo e a mantenham sempre aberta.
 
-Foi implementado apenas um esquema em MOISE+ para procura e captura das vacas, e não dois como especificado na fase de design. Assim, definimos a missão de encontrar uma vaca como a missão inicial no único esquema de captura.
+Foi implementado apenas um esquema em MOISE+ para procura e captura das vacas, e não dois como especificado na fase de design. Assim, definimos a missão de encontrar uma vaca como a missão inicial no único esquema de captura. Além disso, para simplicidade da implentação, decidiu-se em diminuir o número de missões. O esquema adotado foi o seguinte:
 
-% TODO: Inconsistencies about herding cows
+\lstset{
+language=xml,
+numberstyle=\tiny,
+extendedchars=true,
+breaklines=false,
+frame=tb,
+basicstyle=\footnotesize,
+stringstyle=\ttfamily,
+showstringspaces=false
+backgroundcolor=\color{gray}
+}
+
+\begin{lstlisting}
+<scheme id="catchCowScheme" >
+   <goal id="catchCow" min="1">
+      <plan operator="sequence">
+         <goal id="search_cow" ds="search a cow" type="maintenance"/>
+         <goal id="enclose_cows" ds="herd_cows">
+            <plan operator="parallel">
+               <goal id="coordinate_cowboys" type="maintenance"/>
+               <goal id="herding_cows" type="maintenance"/>		
+            </plan>
+         </goal> 
+      </plan>
+   </goal>
+			
+   <mission id="mission1" min="1">  <!-- cowboys mission -->
+      <goal id="search_cow" />
+      <goal id="herding_cows" />
+   </mission>
+   <mission id="mission2" min="1" max="1">  <!-- leader mission -->
+      <goal id="coordinate_cowboys" />
+   </mission>
+</scheme>
+\end{lstlisting}
 
 
 % ### CARACTERÍSTICAS TÉCNICAS ###
@@ -548,7 +584,8 @@ O sistema desenvolvido apresentou instabilidade de comunicação com o servidor 
 
 Testamos a situação em que a simulação é interrompida e o nosso sistema reinicia a partida do ponto que parou. Alguns problemas foram observados neste caso. Cada agente do SMA possui uma representação do mundo, que é construída no decorrer da simulação. Ao interromper a simulação, todo o conhecimento de mundo acumulado é destruído (pois este está armazenado em memória dinâmica). Ao reiniciar a simulação em um ponto diferente, é comum que os agentes levem um certo tempo até aprenderem novamente as informações do mundo e darem continuidade à execução de seus objetivos de forma coordenada.
 
-Foi observado que o sistema consome uma baixa quantidade de memória, porém uma elevada taxa de processamento. A baixa quantidade memória ocorre porque as estruturas de dados armazenam informações muito simples, como pequenas cadeias de caracteres e inteiros. A elevada taxa de processamento ocorre porque o servidor de comunicação não é em tempo real, o que faz com que muitos ciclos com trocas de mensagem sejam cancelados.
+Foi observado que o sistema consome uma baixa quantidade de memória, porém uma elevada taxa de processamento. A baixa quantidade memória ocorre porque as estruturas de dados armazenam informações muito simples, como pequenas cadeias de caracteres e inteiros. A elevada taxa de processamento ocorre porque o servidor de comunicação não é em tempo real, o que faz com que muitos ciclos com trocas de mensagem sejam cancelados. Além disso, temos várias threads rodando ao mesmo tempo para processar as mensagens trocados com o sevidor, atualizar o modelo de mundo dos agentes e calcular a próxima ação à ser executada. 
+
 
 % ### DISCUSSÃO E CONCLUSÃO ###
 \section{Discussão e conclusão}
@@ -573,20 +610,46 @@ Foi observado que o sistema consome uma baixa quantidade de memória, porém uma
 %        platform or technical infrastructure to participate in this contest?
 %\end{enumerate}
 
-O método situacional adotado mostrou-se muito completo nas fases de análise, especificação e design. Através das atividades propostas, foi possível especificar muito bem o SMA e construir corretamente os modelos propostos na fase de design. Na fase de implementação, o método situacional forneceu uma sequência lógica de atividades que contribuiu para a implementação dos agentes e do ambiente. Exceto por esta última fase, todas as outras foram seguidas, atividade por atividade, durante o desenvolvimento do SMA.
+O método situacional adotado mostrou-se muito completo nas fases de análise, especificação e design. Através das atividades propostas, foi possível especificar muito bem o SMA e construir corretamente os modelos propostos na fase de design. Na fase de implementação, o método situacional forneceu uma sequência lógica de atividades que contribuiu para a implementação dos agentes e do ambiente. Exceto pela fase de implementação, todas as outras foram seguidas, atividade por atividade, durante o desenvolvimento do SMA.
 
 O modelo organizacional baseado em MOISE+ foi muito bem aplicado ao domínio do SMA. Não houve dificuldade em mapear as estruturas e funcionalidades do SMA para o modelo organizacional adotado. A implementação da organização também foi fácil utilizando JASON.
 
 % TODO: Discuss cows herding
 
+
 Através das simulações de execução do nosso time de agentes, verificamos que a sabotagem da equipe adversária funciona bem tecnicamente. É necessário verificar se esta estratégia funcionará bem em uma competição real. Para melhorar a sabotagem da equipe adversária, seria interessante criar mais agentes que atrapalham o processo de captura de vacas da equipe adversária (por exemplo, agentes que empurram as vacas no sentido contrário à entrada da cerca).
 
-Houve dificuldade em encontrar recursos online para aprendizado de programação de SMA usando JASON. Os artigos online eram muito simples e a documentação da API de JASON para Java era complexa e incompleta. Para a disseminação de tecnologias multiagentes, seria interessante o desenvolvimento de recursos online de aprendizado mais acessíveis, principalmente para plataformas mais populares, como JASON.
+Houve dificuldade em encontrar recursos online para aprendizado de programação de SMA usando JASON. Os artigos online eram muito simples e a documentação da API de JASON para Java era complexa e incompleta. Para a disseminação de tecnologias multiagentes, seria interessante o desenvolvimento de recursos online de aprendizado mais acessíveis, principalmente para plataformas mais populares, como o JASON.
 
 Com o desenvolvimento do projeto para o \textit{Multi-Agent Programming Contest}, ganhamos experiência com a plataforma JASON, que, apesar de complexa, se mostrou muito poderosa e flexível para a programação de SMAs. O projeto contribuiu muito com o entendimento de como são realizadas interações entre os diversos agentes de um SMA, ficando claro que não é possível controlar sequências de ações de um grupo de agentes ou mesmo de um único agente. Também foi muito útil para obter experiência prática com organização de agentes utilizando MOISE+.
 
 \bibliographystyle{plain}
 \bibliography{myrefs}
+
+\renewcommand*{\appendixname}{Anexo}
+\appendix
+
+
+% ### PROJETO FORNECIDO VS PROJETO FINAL ###
+\section{Projeto fornecido vs Projeto final}
+Foi fornecido aos grupos um projeto inicial com o ambiente, arquitetura dos agentes, comunicação com o servidor e algumas \textit{InternalActions}. Deveríamos assim, nos limitarmos apenas em implentar a parte em AgentSpeak e a organização em Moise+.
+
+Infelizmente, acabamos recebendo esse projeto inical com atraso. Como já tínhamos desenvolvido muita coisa, decidimos manter o que havia sido feito:
+
+\begin{itemize}
+\item Comunicação com o servidor: classes \textit{ServerConnection} e \textit{Messages}.
+\item Ambiente: classe \textit{CowboysEnv}.
+\item Arquitetura dos agentes: classe \textit{CowboyArch}.
+\end{itemize}
+
+E aproveitamos do projeto inicial as seguintes classes:
+\begin{itemize}
+\item Modelo de mundo dos agentes: classes \textit{LocalWorldModel} e \textit{WorldModel}.
+\item Algumas \textit{InternalActions}: pacote \textit{jia}.
+\item Classes de cluster de vacas: pacote \textit{env.cow}.
+\end{itemize}
+
+Alguns ajustes precisaram ser feitos na arquitetura dos agentes e no ambiente para que essas classes do projeto inicial fossem aproveitadas. Infelizmente, não foi possível utilizar o componente resposável pela visualização gráfica dos agentes.
 
 \end{document}
 
