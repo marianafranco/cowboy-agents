@@ -49,7 +49,7 @@ public class path_length extends DefaultInternalAction {
                 if (dist >= 0) {
                     return un.unifies(terms[4], new NumberTermImpl(dist));
                 } else if (!fencesAsObs) {
-                    //ts.getLogger().info("No route from "+from+" to "+to+"!");
+                    ts.getLogger().info("[path_length] No route from "+from+" to "+to+"!");
                 }
                 /*
                 Nodo solution = new Search(model, from, to, null, false, false, false, false, false, fencesAsObs, ts.getUserAgArch()).search();

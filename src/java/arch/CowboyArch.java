@@ -203,15 +203,15 @@ public class CowboyArch extends OrgAgent {
     		} else if (contentAttr.equals("enemy")) {
     			if (! model.hasObject(WorldModel.ENEMY, x, y)) {
                     model.add(WorldModel.ENEMY, x, y);
+                    cModel.freePos(x,y);
+                    
+                    Message m = new Message("tell", null, null, p);
+            		try {
+        				broadcast(m);
+        			} catch (Exception e) {
+        				e.printStackTrace();
+        			}
         		}
-    			/* Don't send the enemy's location to other agents.
-        		Message m = new Message("tell", null, null, p);
-        		try {
-    				broadcast(m);
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			}
-    			*/
     		}
     	// update the model with obstacle and share them with other agents
     	} else if (content.equals("obstacle")) {
@@ -246,25 +246,27 @@ public class CowboyArch extends OrgAgent {
     	} else if (content.equals("corral") && contentAttr.equals("enemy")) {
 			if (! model.hasObject(WorldModel.ENEMYCORRAL, x, y)) {
                 model.add(WorldModel.ENEMYCORRAL, x, y);
+                
+                Message m = new Message("tell", null, null, p);
+        		try {
+    				broadcast(m);
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
     		}
-    		Message m = new Message("tell", null, null, p);
-    		try {
-				broadcast(m);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 		// update the model with the switch location and share this with other agents
     	} else if (content.equals("switch")) {
     		if (! model.hasObject(WorldModel.SWITCH, x, y)) {
                 model.add(WorldModel.SWITCH, x, y);
                 getTS().getAg().addBel(createLiteral("switch", createNumber(x), createNumber(y)));
+                
+                Message m = new Message("tell", null, null, p);
+        		try {
+    				broadcast(m);
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
     		}
-    		Message m = new Message("tell", null, null, p);
-    		try {
-				broadcast(m);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 		// update the model with the fence location and share this with other agents
     	} else if (content.equals("fence")) {
     		int fence = WorldModel.CLOSED_FENCE;
@@ -289,15 +291,15 @@ public class CowboyArch extends OrgAgent {
     	} else if (content.equals("empty")) {
     		if (!model.isFree(x, y)) {
     			model.add(WorldModel.CLEAN, x, y);
+    			cModel.freePos(x,y);
+    			
+    			Message m = new Message("tell", null, null, p);
+        		try {
+    				broadcast(m);
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
     		}
-    		/* Don't send the empty information to other agents.
-    		Message m = new Message("tell", null, null, p);
-    		try {
-				broadcast(m);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			*/
     	}
     }
 
@@ -316,7 +318,8 @@ public class CowboyArch extends OrgAgent {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }       
+            cModel.freePos(x,y);
+        }
     }
 
     /** update the model with obstacle and share them with the team mates */
@@ -405,6 +408,7 @@ public class CowboyArch extends OrgAgent {
                     if (content.equals("obstacle")) {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.OBSTACLE, x, y)) {
                             model.add(WorldModel.OBSTACLE, x, y);
+                            cModel.freePos(x,y);
                         }
                         im.remove();
                     // cow
@@ -425,6 +429,7 @@ public class CowboyArch extends OrgAgent {
                     } else if (content.equals("agent") && contentAttr.equals("enemy")) {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.ENEMY, x, y)) {
                             model.add(WorldModel.ENEMY, x, y);
+                            cModel.freePos(x,y);
                         }
                         im.remove();
                     // fence
@@ -459,6 +464,7 @@ public class CowboyArch extends OrgAgent {
                     } else if (content.equals("empty")) {
                     	if (model.inGrid(x,y) && !model.isFree(x, y)) {
                 			model.add(WorldModel.CLEAN, x, y);
+                			cModel.freePos(x,y);
                 		}
                         im.remove();
                     }
@@ -481,6 +487,7 @@ public class CowboyArch extends OrgAgent {
                             e.printStackTrace();
                         }
                     }
+                    cModel.freePos(x,y);
                     im.remove(); 
                 }
             }
@@ -489,7 +496,7 @@ public class CowboyArch extends OrgAgent {
         }
     }
 
-    public static int getAgId(String agName) {
+    public int getAgId(String agName) {
 		if (agName.equals("leader")) {
 			return 0;
 		} else if (agName.equals("cheat")) {
@@ -497,7 +504,11 @@ public class CowboyArch extends OrgAgent {
 		} else if (agName.equals("cheat_helper")) {
 			return 2;
 		} else {
-			return (Integer.parseInt(agName.substring(agName.length()-1)) + 2);
+			if(numOfCowboys == 7){
+				return (Integer.parseInt(agName.substring(agName.length()-1)) + 2);
+			} else {
+				return (Integer.parseInt(agName.substring(agName.length()-1)));
+			}
 		}
 	}
 

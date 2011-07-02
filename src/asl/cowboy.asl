@@ -25,25 +25,25 @@ desired_mission(catchCowScheme,m1).
 { begin maintenance_goal("+pos(_,_,_)") }
 
 +!herding_cows
-	: .intend(search_cow) &
-	  pos(X,Y,ActionId) & target(TX,TY)
-	<-  .drop_desire(search_cow);
+	: pos(X,Y,ActionId) & target(TX,TY)
+	<-  //.print("[herding_cows1]");
 		.drop_desire(move);
 		!move.
-
-+!herding_cows : pos(X,Y,ActionId) & not target(TX,TY) &
-	jia.near_least_visited(X,Y,ToX,ToY) & not .intend(search_cow)
-	<- 	!pos(ToX,ToY).
 
 +!herding_cows : pos(X,Y,ActionId) & target(X,Y)
-	<- 	//.drop_desire(move);
-		//!move.
+	<- 	//.print("[herding_cows2]");
 		.drop_desire(move);
-		!move_to_corral.
-
-+!herding_cows : target(TX,TY)
-	<-	.drop_desire(move);
 		!move.
 
-+!herding_cows.
++!herding_cows : target(TX,TY)
+	<-	//.print("[herding_cows3]");
+		.drop_desire(move);
+		!move.
+
++!herding_cows : pos(X,Y,ActionId) &
+	jia.near_least_visited(X,Y,ToX,ToY)
+	<- 	//.print("[herding_cows4]");
+		!pos(ToX,ToY).		
+
++!herding_cows <- .print("[herding_cows] do nothing").
 { end }

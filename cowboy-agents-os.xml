@@ -58,7 +58,9 @@
 
 			<goal id="catchCow" min="1">
 				<plan operator="sequence">
+					<!-- 
 					<goal id="search_cow" ds="search a cow" type="maintenance"/>
+					 -->
 					<goal id="enclose_cows" ds="herd_cows">
 						<plan operator="parallel">
 							<goal id="coordinate_cowboys" ds="open fence" type="maintenance"/>
@@ -69,7 +71,7 @@
 			</goal>
 			
 			<mission id="m1" min="1">
-                <goal id="search_cow" />
+<!--                <goal id="search_cow" />-->
                 <goal id="herding_cows" />
             </mission>
             <mission id="m2" min="1" max="1">

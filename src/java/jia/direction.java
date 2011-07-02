@@ -29,6 +29,9 @@ public class direction extends DefaultInternalAction {
     WorldModel.Move[] actionsOrder = new WorldModel.Move[WorldModel.nbActions];
     Random     random = new Random();
 
+    private static final RandomEnum<WorldModel.Move> r =
+        new RandomEnum<WorldModel.Move>(WorldModel.Move.class);
+
     public direction() {
         for (int i=0; i<WorldModel.nbActions; i++) {
             actionsOrder[i] = Search.defaultActions[i];
@@ -48,6 +51,8 @@ public class direction extends DefaultInternalAction {
                     sAction = m.toString();
             } else {
                 ts.getLogger().info("No route from "+ terms[0]+","+terms[1] +" to "+ terms[2]+","+terms[3]+"!"); //+ ((CowboyArch)ts.getUserAgArch()).getModel());
+                // TODO: changed to return a random move
+                sAction = r.random().toString();
             }
             return un.unifies(terms[4], new Atom(sAction));
         } catch (Throwable e) {
@@ -107,5 +112,19 @@ public class direction extends DefaultInternalAction {
             }
         }        
         return solution;
+    }
+    
+    private static class RandomEnum<E extends Enum> {
+
+        private static final Random RND = new Random();
+        private final E[] values;
+
+        public RandomEnum(Class<E> token) {
+            values = token.getEnumConstants();
+        }
+
+        public E random() {
+            return values[RND.nextInt(values.length)];
+        }
     }
 }

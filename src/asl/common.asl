@@ -77,8 +77,8 @@
   <- -+corral_center((UpperLeftX + DownRightX)/2, (UpperLeftY + DownRightY)/2).
 
 
-
 // goal: search cow
+/* 
 { begin maintenance_goal("+pos(_,_,_)") }
 
 +!search_cow
@@ -93,15 +93,15 @@
 +!search_cow
 	: jia.found_cow & scheme_group(Sch,G) &
 	  pos(X,Y,ActionId) & not target(TX,TY)
-	<-  .print("Cow found!");
-		jmoise.set_goal_state(Sch,search_cow,satisfied); // cow found
+	<-  //.print("Cow found!");
+		jmoise.set_goal_state(Sch,search_cow,satisfied);
 		jia.near_least_visited(X,Y,ToX,ToY);
 		!pos(ToX,ToY).
 
-+!search_cow : target(TX,TY)
-	<- 	.drop_desire(pos(ToX,ToY)).
++!search_cow. //<- .print("[search_cow] do nothing").
 
 -!search_cow[error_msg(M),code(C),code_line(L)]
 	<- .print("Error on search_cow, command: ",C,", line ",L,", message: ",M).
 
 { end }
+*/

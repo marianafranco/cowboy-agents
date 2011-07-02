@@ -83,18 +83,18 @@ desired_mission(catchCowScheme,m2).
  	   !send_target(TAg,TLoc).
 +!send_target([],[]).
  
- // find the agent near to pos(FX,FY)
+// find the agent near to pos(FX,FY)
 +!find_closest(Agents, pos(FX,FY), NearAg)
  	<- .my_name(Me);
  	   .findall(d(D,Ag),
-           .member(Ag,Agents) & ally_pos(Ag,AgX,AgY) & jia.path_length(FX,FY,AgX,AgY,D),
-                            Distances);
+           .member(Ag,Agents) & ally_pos(Ag,AgX,AgY) & jia.path_length(FX,FY,AgX,AgY,D), Distances);
            .min(Distances,d(_,NearAg)).
 -!find_closest[error_msg(M),code(C),code_line(L)]
 	<- .print("Error on find_closest, command: ",C,", line ",L,", message: ",M).
 
 
 // open fence
+/* 
 +!go_open_fence
 	: switch(SX,SY) & jia.is_corral_switch(SX,SY) &
 	  pos(X,Y,ActionId) &
@@ -113,32 +113,39 @@ desired_mission(catchCowScheme,m2).
 +!go_open_fence
 	: corral_center(CX,CY) &
 	  not (switch(X,Y) & jia.is_corral_switch(X,Y)) &
-	  not has_no_fence
+	  not has_no_fence(yes)
 	<-  !fence_as_obstacle(0);
 		.print("go to corral");
 		!pos(CX,CY).
 
 +!go_open_fence
 	: not switch(SX,SY) & corral_center(CX,CY) &
-	  not has_no_fence
+	  not has_no_fence(yes)
 	<- 	!fence_as_obstacle(0);
 		.print("no swith, go to corral");
 		!pos(CX,CY).
 
 +!go_open_fence
 	: pos(X,Y,ActionId) & corral_center(CX,CY) &
-	  jia.dist(X,Y,CX,CY, Dist) &
+	  jia.dist(X,Y,CX,CY, Dist) & not has_no_fence(yes) &
 	  Dist < 3
-	<-  -+has_no_fence.
+	<-  +has_no_fence(yes).
 
 +!go_open_fence
-	: has_not_fence & pos(X,Y,ActionId) &
-	  corral(XO,YO,XI,YI)
-	<-  !pos(XO,YO).
+	: has_no_fence(yes) & pos(X,Y,ActionId) &
+	  jia.near_least_visited(X,Y,ToX,ToY) & not .intend(pos(_,_))
+	<-  !pos(ToX,ToY).
+*/
 
-+!go_open_fence
-	: has_not_fence & pos(X,Y,ActionId) &
-	  corral(X,Y,XI,YI).
++!go_open_fence 
+	: pos(X,Y,ActionId) & jia.corral_enemy(X,Y) &
+      not .intend(pos(_,_)).
+
++!go_open_fence 
+	: pos(X,Y,ActionId) & not jia.corral_enemy(X,Y) &
+	  jia.near_least_visited(X,Y,ToX,ToY) &
+      not .intend(pos(_,_))
+	<-  !pos(ToX,ToY).
 
 +!go_open_fence : not pos(_,_,_)
    	<-  .wait({+pos(_,_,_)}).

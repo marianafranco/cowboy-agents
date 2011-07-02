@@ -142,7 +142,9 @@ public class position_to_cluster extends DefaultInternalAction {
 					model.hasObject(WorldModel.OBSTACLE, temp) || 
 					model.hasObject(WorldModel.FENCE, temp) || 
 					model.hasObject(WorldModel.SWITCH, temp) || 
-					model.hasObject(WorldModel.CORRAL, temp)) {
+					model.hasObject(WorldModel.CORRAL, temp) ||
+					model.hasObject(WorldModel.AGENT, temp) ||
+					model.hasObject(WorldModel.AGENT, temp)) {
 				
 				return loc;
 			}

@@ -21,7 +21,7 @@ MAS cowboy_agents {
    			agentArchClass jmoise.OrgAgent 
    			agentArchClass arch.CowboyArch
    			beliefBaseClass agent.UniqueBelsBB("ally_pos(key,_,_)", "target(_,_)");
-   			
+   		/*	
    		cheat
    			agentArchClass jmoise.OrgAgent
    			agentArchClass arch.CowboyArch;
@@ -29,8 +29,8 @@ MAS cowboy_agents {
    		cheat_helper
    			agentArchClass jmoise.OrgAgent
    			agentArchClass arch.CowboyArch;
-   			
-   		cowboy     	#7
+   		*/
+   		cowboy     	#9
    			agentArchClass jmoise.OrgAgent 
    			agentArchClass arch.CowboyArch
    			beliefBaseClass agent.UniqueBelsBB("ally_pos(key,_,_)", "target(_,_)");
