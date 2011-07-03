@@ -45,7 +45,7 @@ desired_mission(catchCowScheme,m1).
 +!herding_cows : pos(X,Y,ActionId) &
 	jia.near_least_visited(X,Y,ToX,ToY)
 	<- 	//.print("[herding_cows4]");
-		!pos(ToX,ToY).		
+		!pos(ToX,ToY).
 
 +!herding_cows <- .print("[herding_cows] do nothing").
 { end }
