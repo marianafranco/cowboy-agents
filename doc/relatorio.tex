@@ -35,7 +35,7 @@
 \maketitle
 
 \begin{abstract}
-Este trabalho apresenta o projeto e implementação de um SMA para participação no \textit{Agent Contest} através da aplicação de programação orientada à organização de agentes. Para isso utilizou-se o modelo organizacional MOISE+ e a plataforma JASON.
+Este trabalho apresenta o projeto e implementação de um SMA para participação no \textit{Agent Contest 2009} através da aplicação de programação orientada à organização de agentes, utilizando-se o modelo organizacional MOISE+ e a plataforma JASON.
 \end{abstract}
 
 % ### INTRODUÇÃO ###
@@ -516,7 +516,7 @@ A estratégia do nosso time de agentes consiste em:
 \item Impedir que o time adversário capture vacas.
 \end{itemize}
 
-Para garantir a captura de pelo menos 1 vaca, foi implementado um esquema em MOISE+ de captura de vacas que consiste em procurar uma vaca e guardá-la dentro do curral. Para impedir que o time adversário capture vacas, foi implementado um esquema que garante que a cerca do time adversário esteja sempre aberta, tornando-se impossível assim guardar a vaca dentro do curral.
+Para garantir a captura de pelo menos 1 vaca, foi definido um esquema (\textit{scheme}) em MOISE+ de captura de vacas que consiste em procurar uma vaca e guardá-la dentro do curral. Para impedir que o time adversário capture vacas, foi implementado um esquema que garante que a cerca do time adversário esteja sempre aberta, tornando-se impossível assim guardar a vaca dentro do curral.
 
 % TODO: Describe what is stored in the word model
 Conforme as mensagens são recebidas do servidor, o agente atualiza o seu modelo de mundo (\textit{WorldModel}) com o conteúdo de cada célula ao seu redor e, no caso dos cowboys, repassa essas informações para o cowboy líder. Dessa forma o líder passa a ter uma visão mais completa sobre o ambiente.
