@@ -56,7 +56,7 @@ public class ClusterModel implements Runnable,IClusterModel{
 	public static final int CLUSTERER_COBWEB = 3;
 	public static final int CLUSTERER_sIB = 4;
 	public static final int CLUSTERER_FF = 5;
-	private int prefRadius=10, prefnCows=10,kPTC=85;
+	private int prefRadius=10, prefnCows=15,kPTC=85;
 	private int useRadius = 4;
 	public static final int RADIUS_MAXDIST = 1;
 	public static final int RADIUS_SD = 2;

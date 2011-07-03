@@ -22,7 +22,8 @@ import arch.WorldModel;
  * Uses A* for this task.
  * Use: jia.direction(+Xo,+Yo,+Xd,+Yd,-Dir);
  * Where: (Xo,Yo) is the origin and (Xd, Yd) is the destiny. D is the direction deserved.
- * @author jomi
+ * 
+ * @author Mariana Ramos Franco
  */
 public class direction_cow_not_obstacle extends DefaultInternalAction {
 

@@ -52,12 +52,14 @@ desired_mission(catchCowScheme,m2).
 // goal: coordinate cowboys
 { begin maintenance_goal("+pos(_,_,_)") }
 
-+!coordinate_cowboys : pos(X,Y,_) & .my_name(Me) & scheme_group(Sch,G) &
++!coordinate_cowboys : pos(X,Y,_) & 
+	.my_name(Me) & scheme_group(Sch,G) &
 	not .intend(coordinate_cowboys) &
 	jia.preferable_cluster(X,Y,L,S,N) &
 	.list(L) &
 	.length(L) > 0 &
-	L = [pos(ClX,ClY),_] &
+	//L = [pos(ClX,ClY),_] &
+	L = [pos(ClX,ClY)] &
 	.count(play(_,captor,G),NAg) &
 	jia.position_to_cluster(ClX,ClY,NAg,Formation)
   	<-	.findall(P, play(P,captor,G), Agents);
@@ -139,7 +141,9 @@ desired_mission(catchCowScheme,m2).
 
 +!go_open_fence 
 	: pos(X,Y,ActionId) & jia.corral_enemy(X,Y) &
-      not .intend(pos(_,_)).
+      not .intend(pos(_,_))
+	<-  jia.move_in_corral_enemy(X,Y,D);
+		do(D,ActionId).
 
 +!go_open_fence 
 	: pos(X,Y,ActionId) & not jia.corral_enemy(X,Y) &

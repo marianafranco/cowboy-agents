@@ -403,7 +403,10 @@ public class CowboyArch extends OrgAgent {
                     int x = (int)((NumberTerm)p.getTerm(0)).solve();
                     int y = (int)((NumberTerm)p.getTerm(1)).solve();
                     String content = p.getTerm(2).toString();
-                    String contentAttr = p.getTerm(3).toString();
+                    String contentAttr = "";
+                    if (p.getTerms().size() >= 4) {
+                    	contentAttr = p.getTerm(3).toString();
+                    }
                     // obstacle
                     if (content.equals("obstacle")) {
                     	if (model.inGrid(x,y) && !model.hasObject(WorldModel.OBSTACLE, x, y)) {

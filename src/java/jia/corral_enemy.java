@@ -7,16 +7,16 @@ import jason.asSyntax.NumberTerm;
 import jason.asSyntax.Term;
 import arch.CowboyArch;
 import arch.WorldModel;
+
 /**
- * This expression is true iff X,Y is inside the corral enemy.
- *
- * Use: jia.corral(+X,+Y);
+ * Test if some location is inside corral. This expression is true iff X,Y
+ * is inside the corral enemy.
+ * 
+ * Use: jia.corral_enemy(+X,+Y);
  * Where: X and Y are the positions for the test.
- *
- **/
-
-
-/** test if some location is inside corral */
+ * 
+ * @author Mariana Ramos Franco
+ */
 public class corral_enemy extends DefaultInternalAction {
     
     @Override

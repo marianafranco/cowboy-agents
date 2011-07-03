@@ -30,15 +30,17 @@ desired_mission(catchCowScheme,m1).
 		.drop_desire(move);
 		!move.
 
-+!herding_cows : pos(X,Y,ActionId) & target(X,Y)
-	<- 	//.print("[herding_cows2]");
-		.drop_desire(move);
-		!move.
++!herding_cows : pos(X,Y,ActionId) & target(X,Y).
+	//<- 	//.print("[herding_cows2]");
+		//.drop_desire(move);
+		//!move.
 
+/*
 +!herding_cows : target(TX,TY)
 	<-	//.print("[herding_cows3]");
 		.drop_desire(move);
 		!move.
+*/
 
 +!herding_cows : pos(X,Y,ActionId) &
 	jia.near_least_visited(X,Y,ToX,ToY)
